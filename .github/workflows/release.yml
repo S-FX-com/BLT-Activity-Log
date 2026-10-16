@@ -1,0 +1,105 @@
+# Release automation: every push to main (i.e. every merge) bumps the plugin
+# version, tags it, builds the distribution zip, and publishes a GitHub
+# release whose asset the plugin-update-checker on client sites installs.
+#
+# Bump level: patch by default; put #minor or #major anywhere in a commit
+# message in the push (squash-merge titles count), or run the workflow
+# manually with the bump input.
+#
+# Loop prevention (three layers): pushes made with GITHUB_TOKEN never
+# trigger workflows (GitHub built-in), the bump commit carries [skip ci],
+# and the actor guard below skips bot-initiated runs.
+#
+# NOTE: if branch protection is ever enabled on main, the bot's direct push
+# will be rejected — grant the Actions app a ruleset bypass, or switch the
+# checkout/push to a PAT secret.
+
+name: Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: 'Version bump level'
+        type: choice
+        options: [patch, minor, major]
+        default: patch
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-main
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+
+      - name: Determine bump level
+        id: level
+        run: |
+          LEVEL="${{ github.event.inputs.bump }}"
+          if [ -z "$LEVEL" ]; then
+            LEVEL=patch
+            RANGE="${{ github.event.before }}..${{ github.sha }}"
+            # On force-push or first push the 'before' sha may be unknown; fall back to the head commit.
+            if ! MESSAGES=$(git log --format=%B "$RANGE" 2>/dev/null); then
+              MESSAGES=$(git log -1 --format=%B "${{ github.sha }}")
+            fi
+            case "$MESSAGES" in
+              *'#major'*) LEVEL=major ;;
+              *'#minor'*) LEVEL=minor ;;
+            esac
+          fi
+          echo "level=$LEVEL" >> "$GITHUB_OUTPUT"
+          echo "Bump level: $LEVEL"
+
+      - name: Bump version
+        id: bump
+        run: |
+          VERSION=$(php .github/scripts/bump-version.php "${{ steps.level.outputs.level }}")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "New version: $VERSION"
+
+      - name: Sanity-check version consistency
+        run: |
+          php -l blt-activity-log.php
+          .github/scripts/check-version-sync.sh
+          grep -q "^ \* Version:[[:space:]]*${{ steps.bump.outputs.version }}\$" blt-activity-log.php
+
+      - name: Commit, tag, push
+        run: |
+          V="${{ steps.bump.outputs.version }}"
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "chore(release): v${V} [skip ci]"
+          git tag "v${V}"
+          git pull --rebase origin main
+          git push origin main --follow-tags
+
+      - name: Build distribution zip
+        run: .github/scripts/build-zip.sh "${{ steps.bump.outputs.version }}"
+
+      - name: Verify zip contents
+        run: .github/scripts/verify-zip.sh "${{ steps.bump.outputs.version }}"
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.bump.outputs.version }}
+          name: v${{ steps.bump.outputs.version }}
+          generate_release_notes: true
+          files: build/blt-activity-log-${{ steps.bump.outputs.version }}.zip
