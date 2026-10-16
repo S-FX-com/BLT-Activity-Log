@@ -1,0 +1,143 @@
+/**
+ * BLT Activity Log — admin styles.
+ *
+ * Layered on top of assets/css/blt-design-system.css (enqueued as a
+ * dependency), which supplies the page shell, cards, field rows, toggles,
+ * badges, tabs, toolbar and stat tiles. Only layout the catalog does not cover
+ * lives here, and every colour comes from the design system's tokens.
+ */
+
+/* --- Log tab: the filter toolbar ------------------------------------------ */
+
+.blt-activity-log .blt-activity-log-filters select,
+.blt-activity-log .blt-activity-log-filters input[type="date"],
+.blt-activity-log .blt-activity-log-filters input[type="search"],
+.blt-activity-log .blt-activity-log-filters input[type="text"] {
+	max-width: 16em;
+}
+
+.blt-activity-log .blt-activity-log-filters input[type="search"] {
+	min-width: 12em;
+}
+
+.blt-activity-log .blt-activity-log-presets {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px 14px;
+	font-size: 13px;
+}
+
+/* --- Log tab: the table fills its card edge to edge ------------------------ */
+
+.blt-activity-log-list .blt-card-body {
+	padding: 0;
+}
+
+.blt-activity-log-list .tablenav {
+	margin: 0;
+	padding: 8px 24px;
+}
+
+/* Below 783px WordPress stacks each row and labels every cell itself; fixed widths would fight it. */
+@media (min-width: 783px) {
+	.blt-activity-log-list .wp-list-table .column-when {
+		width: 12em;
+	}
+
+	.blt-activity-log-list .wp-list-table .column-user {
+		width: 9em;
+	}
+
+	.blt-activity-log-list .wp-list-table .column-activity {
+		width: 15em;
+	}
+}
+
+.blt-activity-log-list .wp-list-table .column-activity .blt-badge {
+	display: inline-block;
+	max-width: 100%;
+	margin-bottom: 4px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	vertical-align: top;
+}
+
+@media (min-width: 783px) {
+	.blt-activity-log-list .wp-list-table .column-source {
+		width: 9em;
+	}
+}
+
+/* On a phone WordPress labels each cell and hides everything after the primary
+   column (Item). When, User and Activity come before it, so they stay visible;
+   their text says what they are, and the labels would only overlap it. */
+@media (max-width: 782px) {
+	.blt-activity-log-list .wp-list-table tr:not(.inline-edit-row):not(.no-items) td.column-when:not(.check-column)::before,
+	.blt-activity-log-list .wp-list-table tr:not(.inline-edit-row):not(.no-items) td.column-user:not(.check-column)::before,
+	.blt-activity-log-list .wp-list-table tr:not(.inline-edit-row):not(.no-items) td.column-activity:not(.check-column)::before {
+		display: none;
+	}
+}
+
+.blt-activity-log-list .wp-list-table td,
+.blt-activity-log-list .wp-list-table th {
+	vertical-align: top;
+}
+
+.blt-activity-log-list .blt-empty {
+	padding: 56px 24px;
+}
+
+/* --- Entry detail ------------------------------------------------------------ */
+
+.blt-activity-log-wrap {
+	overflow-wrap: anywhere;
+	word-break: break-word;
+}
+
+.blt-activity-log-changes th[scope="row"] {
+	width: 14em;
+	font-weight: 600;
+	color: var(--blt-fg);
+}
+
+.blt-activity-log-links {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.blt-activity-log-raw summary {
+	cursor: pointer;
+	font-weight: 600;
+	color: var(--blt-fg);
+}
+
+.blt-activity-log-raw .blt-code {
+	max-height: 26em;
+	margin-top: 12px;
+	overflow: auto;
+}
+
+/* --- Settings ------------------------------------------------------------------ */
+
+/* Indent a nested toggle under its parent: switch width plus the gap. */
+.blt-activity-log .blt-activity-log-nested {
+	margin-left: 46px;
+}
+
+.blt-activity-log .blt-activity-log-stat-date {
+	font-size: 16px;
+}
+
+.blt-activity-log .blt-activity-log-danger {
+	border-color: var(--blt-danger-fg);
+}
+
+.blt-activity-log .blt-activity-log-danger .blt-card-header {
+	background: var(--blt-danger-bg);
+}

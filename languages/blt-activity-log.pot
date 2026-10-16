@@ -1,0 +1,1544 @@
+# Copyright (C) 2026 S-FX.com
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: BLT Activity Log 0.1.0\n"
+"Report-Msgid-Bugs-To: https://github.com/S-FX-com/BLT-Activity-Log/issues\n"
+"POT-Creation-Date: 2026-10-16 04:44+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"X-Generator: bin/make-pot.js\n"
+"X-Domain: blt-activity-log\n"
+
+#: admin/class-blt-activity-log-admin.php:110
+msgid "Entries per page"
+msgstr ""
+
+#: admin/class-blt-activity-log-admin.php:142
+msgid "View log"
+msgstr ""
+
+#: admin/class-blt-activity-log-admin.php:146
+#: admin/class-blt-activity-log-admin.php:357
+#: admin/views/header.php:53
+#: includes/class-blt-activity-log-formatter.php:299
+#: includes/class-blt-activity-log-module-settings.php:59
+msgid "Settings"
+msgstr ""
+
+#: admin/class-blt-activity-log-admin.php:250
+msgid "You do not have permission to view the activity log."
+msgstr ""
+
+#: admin/class-blt-activity-log-admin.php:304
+#: admin/views/header.php:51
+msgid "Log"
+msgstr ""
+
+#: admin/class-blt-activity-log-admin.php:323
+msgid "Entry"
+msgstr ""
+
+#: admin/class-blt-activity-log-admin.php:482
+msgid "Today"
+msgstr ""
+
+#: admin/class-blt-activity-log-admin.php:483
+msgid "Yesterday"
+msgstr ""
+
+#: admin/class-blt-activity-log-admin.php:484
+msgid "Last 7 days"
+msgstr ""
+
+#: admin/class-blt-activity-log-admin.php:485
+msgid "Last 30 days"
+msgstr ""
+
+#: admin/class-blt-activity-log-admin.php:884
+msgid "Settings saved."
+msgstr ""
+
+#: admin/class-blt-activity-log-admin.php:89
+#: admin/class-blt-activity-log-admin.php:90
+#: admin/views/header.php:28
+#: includes/class-blt-activity-log-formatter.php:302
+#: includes/class-blt-activity-log-install.php:52
+#: includes/class-blt-activity-log-module-system.php:34
+#: includes/class-blt-activity-log-privacy.php:85
+#: includes/class-blt-activity-log-privacy.php:100
+msgid "BLT Activity Log"
+msgstr ""
+
+#: admin/class-blt-activity-log-admin.php:891
+msgid "Log cleared: %s entry removed."
+msgid_plural "Log cleared: %s entries removed."
+msgstr[0] ""
+msgstr[1] ""
+
+#: admin/class-blt-activity-log-admin.php:898
+msgid "%s entries were removed. There are more to remove, so the rest will be cleared in the background within a few minutes."
+msgstr ""
+
+#: admin/class-blt-activity-log-admin.php:904
+msgid "Nothing was deleted: tick the box to confirm."
+msgstr ""
+
+#: admin/class-blt-activity-log-admin.php:910
+msgid "Nothing was deleted: choose a valid date."
+msgstr ""
+
+#: admin/class-blt-activity-log-admin.php:917
+msgid "%1$s entries match, which is more than one export can hold (%2$s). Narrow the filters, for example to a shorter date range, and export again."
+msgstr ""
+
+#: admin/class-blt-activity-log-admin.php:947
+msgid "You do not have permission to do that."
+msgstr ""
+
+#: admin/class-blt-activity-log-list-table.php:115
+msgid "No activity matches these filters."
+msgstr ""
+
+#: admin/class-blt-activity-log-list-table.php:162
+msgid "Saved more than once, merged into this entry"
+msgstr ""
+
+#: admin/class-blt-activity-log-list-table.php:56
+#: admin/views/entry.php:84
+msgid "When"
+msgstr ""
+
+#: admin/class-blt-activity-log-list-table.php:57
+#: admin/views/entry.php:65
+#: admin/views/log.php:88
+msgid "User"
+msgstr ""
+
+#: admin/class-blt-activity-log-list-table.php:58
+#: admin/views/log.php:37
+#: admin/views/log.php:70
+#: includes/class-blt-activity-log-privacy.php:146
+msgid "Activity"
+msgstr ""
+
+#: admin/class-blt-activity-log-list-table.php:59
+#: includes/class-blt-activity-log-privacy.php:150
+msgid "Item"
+msgstr ""
+
+#: admin/class-blt-activity-log-list-table.php:60
+msgid "Summary"
+msgstr ""
+
+#: admin/class-blt-activity-log-list-table.php:61
+#: admin/views/entry.php:91
+msgid "Source"
+msgstr ""
+
+#: admin/views/entry-missing.php:23
+msgid "That entry does not exist"
+msgstr ""
+
+#: admin/views/entry-missing.php:24
+msgid "It may have been removed by the retention setting, or cleared from the log."
+msgstr ""
+
+#: admin/views/entry-missing.php:25
+#: admin/views/entry.php:32
+msgid "Back to the log"
+msgstr ""
+
+#: admin/views/entry.php:102
+#: admin/views/settings.php:120
+msgid "Browser"
+msgstr ""
+
+#: admin/views/entry.php:112
+msgid "What changed"
+msgstr ""
+
+#: admin/views/entry.php:117
+msgid "Field"
+msgstr ""
+
+#: admin/views/entry.php:118
+msgid "Before"
+msgstr ""
+
+#: admin/views/entry.php:119
+msgid "After"
+msgstr ""
+
+#: admin/views/entry.php:135
+msgid "Hidden"
+msgstr ""
+
+#: admin/views/entry.php:138
+msgid "a password was set"
+msgstr ""
+
+#: admin/views/entry.php:139
+msgid "the password was changed"
+msgstr ""
+
+#: admin/views/entry.php:140
+msgid "the password was removed"
+msgstr ""
+
+#: admin/views/entry.php:146
+msgid "the value is never stored"
+msgstr ""
+
+#: admin/views/entry.php:151
+msgid "The order changed"
+msgstr ""
+
+#: admin/views/entry.php:153
+msgid "Items were edited, moved or re-linked"
+msgstr ""
+
+#. translators: %s: the full length of a shortened value, in characters.
+#: admin/views/entry.php:169
+msgid "(truncated, %s characters)"
+msgstr ""
+
+#. translators: %s: number of further changes that were not stored.
+#: admin/views/entry.php:188
+msgid "%s more changes were not stored, to keep the entry a reasonable size."
+msgstr ""
+
+#: admin/views/entry.php:201
+msgid "Content"
+msgstr ""
+
+#: admin/views/entry.php:202
+msgid "A summary of what changed inside the content. The content itself is not stored: WordPress revisions already keep it."
+msgstr ""
+
+#: admin/views/entry.php:208
+msgid "Characters before"
+msgstr ""
+
+#: admin/views/entry.php:212
+msgid "Characters after"
+msgstr ""
+
+#: admin/views/entry.php:226
+msgid "Bricks"
+msgstr ""
+
+#: admin/views/entry.php:231
+msgid "Elements were edited. None were added or removed."
+msgstr ""
+
+#: admin/views/entry.php:240
+msgid "Compare revisions"
+msgstr ""
+
+#: admin/views/entry.php:246
+msgid "That revision no longer exists, so only a summary is available."
+msgstr ""
+
+#: admin/views/entry.php:247
+msgid "No revision was saved for this change, so only a summary is available."
+msgstr ""
+
+#: admin/views/entry.php:261
+msgid "Terms"
+msgstr ""
+
+#: admin/views/entry.php:270
+msgid "Added"
+msgstr ""
+
+#: admin/views/entry.php:276
+msgid "Removed"
+msgstr ""
+
+#: admin/views/entry.php:290
+msgid "Versions"
+msgstr ""
+
+#: admin/views/entry.php:294
+msgid "Version"
+msgstr ""
+
+#: admin/views/entry.php:302
+#: includes/class-blt-activity-log-formatter.php:661
+msgid "Scope"
+msgstr ""
+
+#: admin/views/entry.php:303
+msgid "Network-wide"
+msgstr ""
+
+#: admin/views/entry.php:312
+msgid "Related"
+msgstr ""
+
+#. translators: %s: the name of the item.
+#: admin/views/entry.php:322
+msgid "Edit %s"
+msgstr ""
+
+#: admin/views/entry.php:335
+msgid "All activity for this item"
+msgstr ""
+
+#: admin/views/entry.php:337
+msgid "All activity by this user"
+msgstr ""
+
+#: admin/views/entry.php:346
+msgid "Raw record"
+msgstr ""
+
+#. translators: 1: how many times it was saved, 2: time of the first save, 3: time of the last save.
+#: admin/views/entry.php:42
+msgid "Saved %1$s times between %2$s and %3$s"
+msgstr ""
+
+#: admin/views/entry.php:61
+msgid "Who and where"
+msgstr ""
+
+#: admin/views/entry.php:72
+#: admin/views/entry.php:331
+msgid "(deleted)"
+msgstr ""
+
+#: admin/views/entry.php:79
+msgid "Role at the time"
+msgstr ""
+
+#: admin/views/entry.php:96
+#: admin/views/settings.php:109
+#: includes/class-blt-activity-log-privacy.php:154
+msgid "IP address"
+msgstr ""
+
+#: admin/views/header.php:34
+#: admin/views/settings.php:199
+msgid "Check for Updates"
+msgstr ""
+
+#. translators: %s: date and time of the last update check.
+#: admin/views/header.php:40
+msgid "Last checked %s"
+msgstr ""
+
+#: admin/views/header.php:50
+msgid "BLT Activity Log sections"
+msgstr ""
+
+#: admin/views/log.php:100
+msgid "%1$s (%2$s)"
+msgstr ""
+
+#: admin/views/log.php:103
+msgid "%s (deleted)"
+msgstr ""
+
+#: admin/views/log.php:110
+msgid "Username"
+msgstr ""
+
+#: admin/views/log.php:113
+msgid "From date"
+msgstr ""
+
+#: admin/views/log.php:116
+msgid "To date"
+msgstr ""
+
+#: admin/views/log.php:119
+msgid "Search item names"
+msgstr ""
+
+#: admin/views/log.php:120
+msgid "Search items"
+msgstr ""
+
+#: admin/views/log.php:122
+msgid "Filter"
+msgstr ""
+
+#: admin/views/log.php:124
+msgid "Reset"
+msgstr ""
+
+#: admin/views/log.php:140
+msgid "No activity matches these filters"
+msgstr ""
+
+#: admin/views/log.php:141
+msgid "Reset the filters"
+msgstr ""
+
+#: admin/views/log.php:145
+msgid "Nothing to show yet"
+msgstr ""
+
+#. translators: %s: the date logging started.
+#: admin/views/log.php:154
+msgid "Logging started on %s. Changes will appear here as they happen."
+msgstr ""
+
+#: admin/views/log.php:43
+msgid "%1$s entry matches these filters, out of %2$s in the log."
+msgid_plural "%1$s entries match these filters, out of %2$s in the log."
+msgstr[0] ""
+msgstr[1] ""
+
+#: admin/views/log.php:50
+msgid "%s entry in the log."
+msgid_plural "%s entries in the log."
+msgstr[0] ""
+msgstr[1] ""
+
+#: admin/views/log.php:58
+msgid "Export CSV"
+msgstr ""
+
+#: admin/views/log.php:72
+msgid "All activity"
+msgstr ""
+
+#: admin/views/log.php:78
+msgid "All %s"
+msgstr ""
+
+#: admin/views/log.php:91
+msgid "Anyone"
+msgstr ""
+
+#: admin/views/log.php:92
+msgid "No user (system, cron, WP-CLI)"
+msgstr ""
+
+#: admin/views/settings.php:104
+msgid "Privacy"
+msgstr ""
+
+#: admin/views/settings.php:105
+msgid "What is stored about the person behind each entry."
+msgstr ""
+
+#: admin/views/settings.php:112
+msgid "Store in full"
+msgstr ""
+
+#: admin/views/settings.php:113
+msgid "Anonymize (remove the last part)"
+msgstr ""
+
+#: admin/views/settings.php:114
+msgid "Do not store"
+msgstr ""
+
+#: admin/views/settings.php:116
+msgid "Applies to new entries. Entries already in the log keep what they have."
+msgstr ""
+
+#: admin/views/settings.php:126
+msgid "Store the browser (user agent)"
+msgstr ""
+
+#: admin/views/settings.php:127
+msgid "Shortened to 255 characters."
+msgstr ""
+
+#: admin/views/settings.php:137
+msgid "Retention"
+msgstr ""
+
+#: admin/views/settings.php:138
+msgid "Old entries are removed automatically, once a day."
+msgstr ""
+
+#: admin/views/settings.php:143
+msgid "Entries"
+msgstr ""
+
+#: admin/views/settings.php:147
+msgid "Oldest entry"
+msgstr ""
+
+#: admin/views/settings.php:151
+msgid "Last prune"
+msgstr ""
+
+#: admin/views/settings.php:158
+msgid "%s entry removed"
+msgid_plural "%s entries removed"
+msgstr[0] ""
+msgstr[1] ""
+
+#: admin/views/settings.php:169
+msgid "Keep entries for"
+msgstr ""
+
+#: admin/views/settings.php:172
+msgid "days"
+msgstr ""
+
+#: admin/views/settings.php:175
+msgid "Locked"
+msgstr ""
+
+#. translators: %s: the constant name.
+#: admin/views/settings.php:179
+msgid "Set by %s in wp-config.php. Change it there."
+msgstr ""
+
+#: admin/views/settings.php:185
+msgid "0 keeps entries forever. To lock this for compliance, define BLT_ACTIVITY_LOG_RETENTION_DAYS in wp-config.php."
+msgstr ""
+
+#: admin/views/settings.php:194
+msgid "Updates"
+msgstr ""
+
+#: admin/views/settings.php:195
+msgid "BLT Activity Log checks GitHub for a new version once a day, at midnight site time."
+msgstr ""
+
+#. translators: %s: the plugin version.
+#: admin/views/settings.php:205
+msgid "Installed version: %s"
+msgstr ""
+
+#: admin/views/settings.php:215
+msgid "Advanced"
+msgstr ""
+
+#: admin/views/settings.php:219
+msgid "On uninstall"
+msgstr ""
+
+#: admin/views/settings.php:225
+msgid "Delete all plugin data when the plugin is deleted"
+msgstr ""
+
+#: admin/views/settings.php:226
+msgid "The log, the settings and the capability. Off by default, so deleting and reinstalling the plugin loses nothing."
+msgstr ""
+
+#: admin/views/settings.php:235
+msgid "Save changes"
+msgstr ""
+
+#: admin/views/settings.php:244
+msgid "Clear log"
+msgstr ""
+
+#: admin/views/settings.php:245
+msgid "Permanently delete entries. A record that the log was cleared is kept, so a cleared log is never silently empty."
+msgstr ""
+
+#: admin/views/settings.php:247
+msgid "Cannot be undone"
+msgstr ""
+
+#: admin/views/settings.php:260
+msgid "%1$s entry older than %2$s will be permanently deleted."
+msgid_plural "%1$s entries older than %2$s will be permanently deleted."
+msgstr[0] ""
+msgstr[1] ""
+
+#: admin/views/settings.php:267
+msgid "All %s entry will be permanently deleted."
+msgid_plural "All %s entries will be permanently deleted."
+msgstr[0] ""
+msgstr[1] ""
+
+#: admin/views/settings.php:275
+msgid "I understand this cannot be undone."
+msgstr ""
+
+#: admin/views/settings.php:278
+msgid "Delete these entries"
+msgstr ""
+
+#: admin/views/settings.php:279
+msgid "Cancel"
+msgstr ""
+
+#: admin/views/settings.php:285
+msgid "All entries"
+msgstr ""
+
+#: admin/views/settings.php:289
+msgid "Entries older than"
+msgstr ""
+
+#: admin/views/settings.php:290
+msgid "Delete entries older than this date"
+msgstr ""
+
+#: admin/views/settings.php:294
+msgid "Preview what will be deleted"
+msgstr ""
+
+#: admin/views/settings.php:296
+msgid "Nothing is deleted until you confirm on the next screen."
+msgstr ""
+
+#: admin/views/settings.php:41
+msgid "What to log"
+msgstr ""
+
+#: admin/views/settings.php:42
+msgid "Choose which kinds of activity are recorded. Changes to this plugin's own settings are always recorded."
+msgstr ""
+
+#: admin/views/settings.php:60
+msgid "Failed sign-ins"
+msgstr ""
+
+#: admin/views/settings.php:61
+msgid "Off by default: a brute-force attack would flood the log. Locking people out is the job of a security plugin."
+msgstr ""
+
+#: admin/views/settings.php:70
+msgid "Skip these post types"
+msgstr ""
+
+#: admin/views/settings.php:73
+msgid "Post type names, separated by commas, left out of the log in addition to the ones that are never logged (such as revisions)."
+msgstr ""
+
+#: admin/views/settings.php:81
+msgid "Settings changes"
+msgstr ""
+
+#: admin/views/settings.php:82
+msgid "Which options count when the Settings module is on."
+msgstr ""
+
+#: admin/views/settings.php:85
+msgid "Which settings changes are logged"
+msgstr ""
+
+#: admin/views/settings.php:89
+msgid "WordPress settings screens"
+msgstr ""
+
+#: admin/views/settings.php:90
+msgid "Options on the General, Writing, Reading, Discussion, Media, Permalinks and Privacy screens. Quiet and focused."
+msgstr ""
+
+#: admin/views/settings.php:95
+msgid "Any option changed by a signed-in user"
+msgstr ""
+
+#: admin/views/settings.php:96
+msgid "Also catches other plugins' settings forms. Noisier: plugins write options often. Changes by cron and visitors are not logged."
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1006
+msgid "%1$s created %2$s “%3$s”"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1008
+msgid "%1$s updated %2$s “%3$s”"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1010
+msgid "%1$s published %2$s “%3$s”"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1012
+msgid "%1$s unpublished %2$s “%3$s”"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1014
+msgid "%1$s scheduled %2$s “%3$s”"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1016
+msgid "%1$s made %2$s “%3$s” private"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1018
+msgid "%1$s trashed %2$s “%3$s”"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1020
+msgid "%1$s restored %2$s “%3$s”"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1022
+msgid "%1$s deleted %2$s “%3$s”"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1037
+msgid "%1$s uploaded “%3$s”"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1039
+msgid "%1$s edited the details of “%3$s”"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1041
+msgid "%1$s deleted “%3$s”"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1048
+msgid "%1$s created the menu “%3$s”"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1050
+msgid "%1$s updated the menu “%3$s”"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1052
+msgid "%1$s deleted the menu “%3$s”"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1054
+msgid "%1$s changed menu locations"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1056
+msgid "%1$s changed widgets"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1058
+msgid "%1$s changed theme settings"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1061
+msgid "%1$s installed the plugin “%3$s”"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1063
+msgid "%1$s updated the plugin “%3$s”"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1065
+msgid "%1$s activated the plugin “%3$s”"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1067
+msgid "%1$s deactivated the plugin “%3$s”"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1069
+msgid "%1$s deleted the plugin “%3$s”"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1071
+#: includes/class-blt-activity-log-formatter.php:1086
+msgid "%1$s turned on auto-updates for “%3$s”"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1073
+#: includes/class-blt-activity-log-formatter.php:1088
+msgid "%1$s turned off auto-updates for “%3$s”"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1075
+msgid "The plugin “%3$s” changed outside WordPress"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1078
+msgid "%1$s installed the theme “%3$s”"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1080
+msgid "%1$s updated the theme “%3$s”"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1082
+msgid "%1$s switched to the theme “%3$s”"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1084
+msgid "%1$s deleted the theme “%3$s”"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1090
+msgid "The theme “%3$s” changed outside WordPress"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1093
+msgid "%1$s updated WordPress"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1094
+msgid "WordPress changed outside WordPress itself"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1097
+msgid "%1$s changed the setting “%3$s”"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1099
+msgid "%1$s deleted the setting “%3$s”"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1101
+msgid "%1$s requested a change of the administration email address"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1104
+msgid "%1$s created the user “%3$s”"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1106
+msgid "%1$s updated the user “%3$s”"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1108
+msgid "The password of “%3$s” was changed"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1110
+msgid "The password of “%3$s” was reset"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1112
+msgid "%1$s changed the role of “%3$s”"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1114
+msgid "%1$s deleted the user “%3$s”"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1116
+msgid "%1$s created an application password for “%3$s”"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1118
+msgid "%1$s revoked an application password for “%3$s”"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1121
+msgid "%1$s signed in"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1123
+msgid "%1$s signed out"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1125
+msgid "A sign-in failed for “%3$s”"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1128
+msgid "Logging started (%1$s)"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1130
+msgid "%1$s cleared the log"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1132
+msgid "%1$s exported the log"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1213
+msgid "Added %1$s, removed %2$s"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1218
+msgid "Added %s"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:1223
+msgid "Removed %s"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:282
+msgid "%s ago"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:292
+#: includes/class-blt-activity-log-module-posts.php:91
+msgid "Posts & pages"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:293
+#: includes/class-blt-activity-log-module-media.php:45
+msgid "Media"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:294
+#: includes/class-blt-activity-log-module-terms.php:49
+msgid "Categories & tags"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:295
+#: includes/class-blt-activity-log-module-appearance.php:55
+msgid "Menus, widgets & Customizer"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:296
+#: includes/class-blt-activity-log-module-plugins.php:40
+msgid "Plugins"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:297
+#: includes/class-blt-activity-log-module-themes.php:37
+msgid "Themes"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:298
+#: includes/class-blt-activity-log-module-core.php:29
+msgid "WordPress updates"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:300
+#: includes/class-blt-activity-log-module-users.php:49
+msgid "Users"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:301
+#: includes/class-blt-activity-log-module-sessions.php:37
+msgid "Sign-ins"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:303
+msgid "Other"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:335
+msgid "Created"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:336
+msgid "Updated"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:337
+msgid "Deleted"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:338
+msgid "Installed"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:339
+msgid "Auto-updates enabled"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:340
+msgid "Auto-updates disabled"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:341
+msgid "Changed outside WordPress"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:347
+msgid "Published"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:348
+msgid "Unpublished"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:349
+msgid "Scheduled"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:350
+msgid "Made private"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:351
+msgid "Trashed"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:352
+msgid "Restored"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:356
+msgid "Uploaded"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:366
+msgid "Menu created"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:367
+msgid "Menu updated"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:368
+msgid "Menu deleted"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:369
+msgid "Menu locations changed"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:370
+msgid "Widgets changed"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:371
+msgid "Customizer published"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:376
+msgid "Activated"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:377
+msgid "Deactivated"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:386
+msgid "Switched"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:399
+msgid "Admin email change requested"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:404
+msgid "Password changed"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:405
+msgid "Password reset"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:406
+msgid "Role changed"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:408
+msgid "Application password created"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:409
+msgid "Application password revoked"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:412
+msgid "Signed in"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:413
+msgid "Signed out"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:414
+msgid "Failed sign-in"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:417
+msgid "Logging started"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:418
+msgid "Log cleared"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:419
+msgid "Exported"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:453
+msgid "System"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:453
+#: includes/class-blt-activity-log-formatter.php:486
+#: includes/class-blt-activity-log-formatter.php:865
+msgid "WP-CLI"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:487
+msgid "WP-Cron"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:488
+msgid "REST API"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:489
+msgid "AJAX"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:490
+msgid "XML-RPC"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:491
+msgid "Sign-in page"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:492
+msgid "Admin screen"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:493
+msgid "Front end"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:516
+msgid "file"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:528
+msgid "plugin"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:529
+msgid "theme"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:530
+msgid "WordPress"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:531
+msgid "user"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:532
+msgid "setting"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:533
+msgid "menu"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:534
+msgid "widgets"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:535
+msgid "theme settings"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:557
+msgid "Widgets"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:571
+msgid "(no title)"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:597
+msgid "%1$s: %2$s %3$s"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:603
+msgid "%s registered an account"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:620
+#: includes/class-blt-activity-log-formatter.php:632
+msgid "Title"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:621
+#: includes/class-blt-activity-log-formatter.php:641
+msgid "Slug"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:622
+msgid "Status"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:623
+msgid "Author"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:624
+#: includes/class-blt-activity-log-formatter.php:642
+msgid "Parent"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:625
+msgid "Order"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:626
+msgid "Excerpt"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:627
+msgid "Comments"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:628
+msgid "Pingbacks"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:629
+msgid "Password"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:630
+msgid "Date"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:633
+msgid "Caption"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:634
+msgid "Description"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:635
+msgid "Alt text"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:636
+msgid "File"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:637
+msgid "File type"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:638
+msgid "File size"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:640
+msgid "Name"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:644
+msgid "Email"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:645
+msgid "Display name"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:646
+msgid "Profile URL name"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:647
+msgid "Website"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:648
+msgid "First name"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:649
+msgid "Last name"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:650
+msgid "Nickname"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:651
+msgid "Role"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:652
+msgid "Content reassigned to"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:653
+msgid "Application"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:655
+msgid "Menu items"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:656
+msgid "Menu name"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:657
+msgid "Theme"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:659
+msgid "Entries removed"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:660
+msgid "Entries exported"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:662
+msgid "Filters"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:664
+msgid "Site title"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:665
+msgid "Tagline"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:666
+msgid "Site icon"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:667
+msgid "WordPress address"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:668
+msgid "Site address"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:669
+msgid "Administration email address"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:670
+msgid "New administration email address"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:671
+msgid "Anyone can register"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:672
+msgid "New user default role"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:673
+msgid "Timezone"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:674
+msgid "Timezone offset"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:675
+msgid "Date format"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:676
+msgid "Time format"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:677
+msgid "Week starts on"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:678
+msgid "Site language"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:679
+msgid "Your homepage displays"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:680
+msgid "Homepage"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:681
+msgid "Posts page"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:682
+msgid "Blog pages show at most"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:683
+msgid "Search engine visibility"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:684
+msgid "Permalink structure"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:685
+msgid "Category base"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:686
+msgid "Tag base"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:687
+msgid "Allow comments on new posts"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:688
+msgid "Comments must be manually approved"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:689
+msgid "Privacy policy page"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:690
+msgid "Mail server password"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:701
+msgid "Custom field “%s”"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:704
+msgid "Menu location “%s”"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:707
+msgid "Widget area “%s”"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:710
+msgid "Theme setting “%s”"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:755
+msgid "Closed"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:755
+msgid "Open"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:800
+msgid "+%d more"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:862
+msgid "from the admin screen"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:863
+msgid "uploaded"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:864
+msgid "automatic"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:866
+msgid "outside WordPress"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:887
+#: includes/class-blt-activity-log-formatter.php:892
+msgid "%d block"
+msgid_plural "%d blocks"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-blt-activity-log-formatter.php:895
+msgid "content"
+msgstr ""
+
+#: includes/class-blt-activity-log-formatter.php:913
+#: includes/class-blt-activity-log-formatter.php:918
+msgid "%d element"
+msgid_plural "%d elements"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-blt-activity-log-install.php:51
+msgid "BLT Activity Log cannot be network activated. Activate it on each site you want to log, from that site's Plugins screen."
+msgstr ""
+
+#: includes/class-blt-activity-log-module-appearance.php:62
+msgid "Navigation menus, menu locations, widgets and theme settings changed in the Customizer."
+msgstr ""
+
+#: includes/class-blt-activity-log-module-core.php:36
+msgid "WordPress core updated to a new version."
+msgstr ""
+
+#: includes/class-blt-activity-log-module-media.php:52
+msgid "Files uploaded to the media library, edits to their details, and deletions."
+msgstr ""
+
+#: includes/class-blt-activity-log-module-plugins.php:47
+msgid "Plugins installed, updated, activated, deactivated or deleted."
+msgstr ""
+
+#: includes/class-blt-activity-log-module-posts.php:98
+msgid "Content created, edited, published, scheduled, trashed, restored or deleted, with the fields that changed."
+msgstr ""
+
+#: includes/class-blt-activity-log-module-sessions.php:44
+msgid "People signing in and out."
+msgstr ""
+
+#: includes/class-blt-activity-log-module-settings.php:66
+msgid "Changes to site settings, with the old and new value of each field."
+msgstr ""
+
+#: includes/class-blt-activity-log-module-system.php:41
+msgid "Changes to this plugin's own settings, clearing the log and exporting it. Always on."
+msgstr ""
+
+#: includes/class-blt-activity-log-module-terms.php:56
+msgid "Categories, tags and other terms created, edited or deleted."
+msgstr ""
+
+#: includes/class-blt-activity-log-module-themes.php:44
+msgid "Themes installed, updated, switched or deleted."
+msgstr ""
+
+#: includes/class-blt-activity-log-module-users.php:56
+msgid "Accounts created, edited or deleted, role changes, password changes and application passwords."
+msgstr ""
+
+#: includes/class-blt-activity-log-privacy.php:142
+msgid "Time"
+msgstr ""
+
+#: includes/class-blt-activity-log-privacy.php:207
+msgid "Activity log entries are kept as a record of site security. The IP address and browser were removed from them."
+msgstr ""
+
+#: includes/class-blt-activity-log-privacy.php:50
+#: includes/class-blt-activity-log-privacy.php:138
+msgid "Activity log"
+msgstr ""
+
+#: includes/class-blt-activity-log-privacy.php:51
+msgid "This text suggests what to tell visitors and users about the activity log kept by BLT Activity Log. Review it and edit it to match how you use the log."
+msgstr ""
+
+#: includes/class-blt-activity-log-privacy.php:52
+msgid "We keep a record of changes made to this site: content, plugins, themes, settings and user accounts, and when people sign in. Each record notes who made the change, when, and from which screen."
+msgstr ""
+
+#: includes/class-blt-activity-log-privacy.php:55
+msgid "The record does not include IP addresses."
+msgstr ""
+
+#: includes/class-blt-activity-log-privacy.php:57
+msgid "The record includes IP addresses with their last part removed, and the browser used."
+msgstr ""
+
+#: includes/class-blt-activity-log-privacy.php:59
+msgid "The record includes the IP address and the browser used."
+msgstr ""
+
+#. translators: %d: number of days entries are kept.
+#: includes/class-blt-activity-log-privacy.php:66
+msgid "Entries are deleted automatically after %d day."
+msgid_plural "Entries are deleted automatically after %d days."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-blt-activity-log-privacy.php:71
+msgid "Entries are kept until a site administrator clears them."
+msgstr ""
+
+#: includes/class-blt-activity-log.php:138
+msgid "BLT Activity Log does not support network activation, so it is not recording anything. Deactivate it for the network and activate it on each site you want to log."
+msgstr ""
