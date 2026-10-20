@@ -6,7 +6,7 @@ This file states only what is specific to BLT Activity Log. It does not restate 
 
 | | |
 | --- | --- |
-| Status | Built through phase 6 of `tasks/todo.md` (release phase still open); version 0.1.0 in the repo, releases are cut by CI on merge to `main`. October 16, 2026. |
+| Status | Built through phase 6 of `tasks/todo.md` (release phase still open); version 0.1.0 in the repo, the first release is 1.0.0 (CI bumps on merge to `main`; use `#major`). October 16, 2026. |
 | Repository | `S-FX-com/BLT-Activity-Log` |
 | Slug / text domain | `blt-activity-log` |
 | Floors | PHP 7.4, WordPress 6.0 (family default, no reason to raise) |
@@ -48,7 +48,7 @@ The naming matrix from CONVENTIONS 4.1, filled in.
 | Display name | BLT Activity Log |
 | Main file | `blt-activity-log.php` |
 | Constants | `BLT_ACTIVITY_LOG_VERSION`, `_FILE`, `_DIR`, `_URL`, `_BASENAME`. No `_REST_NS`. |
-| Optional wp-config constants | `BLT_ACTIVITY_LOG_GITHUB_TOKEN`, `BLT_ACTIVITY_LOG_RETENTION_DAYS` (locks retention; the setting shows as read-only) |
+| Optional wp-config constants | `BLT_ACTIVITY_LOG_GITHUB_TOKEN`, `BLT_ACTIVITY_LOG_RETENTION_DAYS` (locks retention to 1 to 365 days; the setting shows as read-only) |
 | Classes | `BLT_Activity_Log_<Thing>`, no namespace |
 | Class files | `includes/class-blt-activity-log-<thing>.php`, admin classes in `admin/`. **Modules stay flat in `includes/`** (`class-blt-activity-log-module-posts.php`) because the computed autoloader probes only `includes/` and `admin/`. |
 | Functions, hooks, filters | `blt_activity_log_*` |
@@ -200,7 +200,7 @@ Only the keys that apply are present. Also possible: `changes[].order_changed` a
 | `modules` | every module on except `session_failed` | Map of module id to bool |
 | `settings_scope` | `core` | `core` or `all` (section 6.4) |
 | `excluded_post_types` | `array()` | Added to the built-in exclusions |
-| `retention_days` | `90` | `0` keeps forever. Overridden by `BLT_ACTIVITY_LOG_RETENTION_DAYS`. |
+| `retention_days` | `90` | 1 to 365, adjustable per site. There is no "keep forever": 0 or text is refused, and a stored or configured value outside the range reads as 90 (above 365 reads as 365). Overridden by `BLT_ACTIVITY_LOG_RETENTION_DAYS`. |
 | `ip_mode` | `full` | `full`, `anonymized`, `off` |
 | `store_user_agent` | `true` | |
 | `delete_data_on_uninstall` | `false` | |
@@ -402,7 +402,7 @@ Opened from the Item column. Back link returns to the log with the same filters 
 | What to log | One `.blt-toggle` per module with a one-line description; nested toggle for failed sign-ins |
 | Settings scope | Selectable cards: "WordPress settings screens" (default) or "Any option changed by a signed-in user", with the trade-off stated (the second is noisier) |
 | Privacy | IP storage: full / anonymized / off. Store browser user agent toggle. |
-| Retention | Days (0 = keep forever). Locked with an explanation when `BLT_ACTIVITY_LOG_RETENTION_DAYS` is defined. Stat tiles: total entries, oldest entry, last prune. |
+| Retention | Days, 1 to 365. Locked with an explanation when `BLT_ACTIVITY_LOG_RETENTION_DAYS` is defined. Stat tiles: total entries, oldest entry, last prune. **Download a full dump** (section 7.6). |
 | Updates | **Check for Updates** (CONVENTIONS 9.1) |
 | Advanced | "Delete all plugin data on uninstall" toggle |
 | Clear log | Danger card. Choose "all entries" or "older than {date}". The first submit is a preview showing the exact count; a second POST with a confirm checkbox and nonce deletes. Writes `system:log_cleared` afterwards, so a cleared log is never silently empty. |
@@ -413,13 +413,17 @@ Save bar at the bottom. Saving writes a `setting:updated` entry for `blt_activit
 
 `admin-post.php?action=blt_activity_log_export` with nonce, `manage_options`, and the current filters. Streams with keyset pagination on `id` in batches of 1,000 so memory stays flat. Row cap 50,000 (filter `blt_activity_log_export_limit`); above it, show a notice asking the user to narrow the filters. Columns: ID, site time, UTC time, user, role, category, action, object type, object ID or key, label, summary, context, IP. Any cell starting with `=`, `+`, `-`, `@`, tab or carriage return is prefixed with `'`. Writes `system:exported`.
 
+### 7.6 Dump
+
+`admin-post.php?action=blt_activity_log_dump` with its own nonce and `manage_options`. Streams **every** entry as CSV, newest first, with no filters, no row cap (`blt_activity_log_export_limit` does not apply) and no time limit, in keyset batches so memory stays flat. Columns are the stored ones: ID, created and last saved (UTC), saves merged, user ID, login, role, category, action, object type, object ID, object key, label, context, IP, browser, and the full `details` JSON. It is the stored data, not the on-screen view, so it can be kept as an archive when entries age out of the retention window. Nothing is written to the server. Writes `system:exported` with scope `full dump`. Offered on the Retention card and in the Clear log preview.
+
 ---
 
 ## 8. Retention, privacy and uninstall
 
 ### 8.1 Retention
 
-Daily `blt_activity_log_prune` cron deletes rows with `created_at` older than the retention cutoff: `DELETE ... ORDER BY id LIMIT 1000` in a loop until the tick budget is spent (default 15 s, filter `blt_activity_log_tick_budget`). If rows remain, schedule a single event 60 s out. If cron has not pruned in 2 days, opening the log screen schedules one and calls `spawn_cron()`; it never prunes in the page request.
+Retention is 1 to 365 days (90 by default, adjustable per site; no "keep forever"). Daily `blt_activity_log_prune` cron deletes rows with `created_at` older than the retention cutoff: `DELETE ... ORDER BY id LIMIT 1000` in a loop until the tick budget is spent (default 15 s, filter `blt_activity_log_tick_budget`). If rows remain, schedule a single event 60 s out. If cron has not pruned in 2 days, opening the log screen schedules one and calls `spawn_cron()`; it never prunes in the page request.
 
 ### 8.2 Privacy
 
@@ -494,15 +498,13 @@ WordPress-coupled behavior is exercised against a real WordPress install; the ch
 
 ## 12. Deviations from CONVENTIONS and open decisions
 
-Resolve each, then delete the row. Resolved during the build and recorded in `README.md` (Architecture notes): the Tools submenu works through the family layer as it is; the log is `WP_List_Table` in a card; the repo is public, so there is no GitHub token.
+Resolve each, then delete the row. Resolved during the build and recorded in `README.md` (Architecture notes): the Tools submenu works through the family layer as it is; the log is `WP_List_Table` in a card; the repo is public, so there is no GitHub token; defaults confirmed (90 days retention, adjustable from 1 to 365; IP stored in full); the first release is 1.0.0 (merge with `#major` in the commit message, see `tasks/todo.md`).
 
 | # | Priority | Item | Recommendation |
 | --- | --- | --- | --- |
 | 1 | Med | **IP range matching duplicates BLT Secure's** Cloudflare `CF-Connecting-IP` logic. | Ship a local copy for v1 (no shared-layer additions without asking, CONVENTIONS 16.3 rule 4). Candidate for `includes/blt-family/` later. |
 | 2 | Low | **Other BLT plugins writing entries.** Optimized and Secure keep their own logs. Emitting `blt_activity_log_record` from them is a one-line, dependency-free addition. | Yes, but after v1 ships, as a change in those repos. |
-| 3 | Low | **Defaults for client sites.** Retention 90 days, IP stored in full. School-district and association clients may need longer retention or anonymized IPs. | Confirm defaults; site owners can override per site, and the retention constant covers compliance cases. |
-| 4 | Med | **First release number.** The release workflow bumps the patch on the first merge, so the first published version is 0.1.1, not the 0.1.0 Phase 0 expects. | Accept 0.1.1, or set the repo version to 0.0.0 and put `#minor` in the merge commit. |
-| 5 | Med | **Family list in `DESIGN.md`.** CONVENTIONS 16.1 step 7 says to add each new plugin to it, in every repo in the same pass. `DESIGN.md` is vendored, so it was not edited here alone. | Make the change in every BLT repo together. |
+| 3 | Med | **Family list in `DESIGN.md`.** CONVENTIONS 16.1 step 7 says to add each new plugin to it, in every repo in the same pass. `DESIGN.md` is vendored, so it was not edited here alone. | Make the change in every BLT repo together. |
 
 ---
 

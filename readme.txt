@@ -28,7 +28,7 @@ BLT Activity Log records changes made to the WordPress site it runs on. Each ent
 
 **Where to find it**
 
-Open **Tools > BLT Activity Log**. Filter by activity, user and date, search by item name, open any entry for the full detail, and export the filtered log as CSV.
+Open **Tools > BLT Activity Log**. Filter by activity, user and date, search by item name, open any entry for the full detail, and export the filtered log as CSV. On the Settings tab, download a full dump of every entry to keep a copy before it ages out.
 
 **Built to stay out of the way**
 

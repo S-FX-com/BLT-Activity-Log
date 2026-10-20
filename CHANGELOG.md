@@ -2,9 +2,9 @@
 
 Release notes for BLT Activity Log. Versions are bumped by CI when a change merges to `main`; the version in the plugin header, `BLT_ACTIVITY_LOG_VERSION` and the `readme.txt` stable tag always match.
 
-## 0.1.0
+## 1.0.0
 
-First build.
+First release.
 
 ### Recording
 
@@ -18,7 +18,8 @@ First build.
 ### Admin
 
 - **Tools > BLT Activity Log**: Log and Settings tabs, a filterable and sortable list (activity, user, date range in site time, search), entry detail screens, Screen Options, and CSV export (up to 50,000 rows, formula-safe).
-- Settings: what to log, post types to skip, settings scope, IP handling, browser storage, retention, delete-on-uninstall, and a two-step Clear log.
+- Settings: what to log, post types to skip, settings scope, IP handling, browser storage, retention (1 to 365 days, 90 by default, adjustable per site), delete-on-uninstall, and a two-step Clear log.
+- **Download a full dump**: every entry, unfiltered and uncapped, with every column including the full details, as a CSV. Also offered before clearing the log.
 
 ### Lifecycle
 

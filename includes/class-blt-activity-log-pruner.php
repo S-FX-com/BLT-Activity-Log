@@ -43,9 +43,9 @@ class BLT_Activity_Log_Pruner {
 	/**
 	 * The oldest `created_at` (UTC) an entry may have and be kept.
 	 *
-	 * @param int      $days Retention in days; 0 keeps everything.
+	 * @param int      $days Retention in days. Settings guarantees 1 to 365; anything below 1 has no cutoff, so nothing is deleted.
 	 * @param int|null $now  Unix time; now when omitted.
-	 * @return string|null `Y-m-d H:i:s`, or null when nothing expires.
+	 * @return string|null `Y-m-d H:i:s`, or null when there is no valid cutoff.
 	 */
 	public static function cutoff( $days, $now = null ) {
 		$days = (int) $days;
@@ -102,14 +102,8 @@ class BLT_Activity_Log_Pruner {
 		try {
 			$cutoff = self::cutoff( BLT_Activity_Log_Settings::retention_days() );
 
+			// Settings keeps retention between 1 and 365 days, so this is only a guard on a destructive path.
 			if ( null === $cutoff ) {
-				BLT_Activity_Log_Settings::update_state(
-					array(
-						'last_prune_at'   => time(),
-						'last_prune_rows' => 0,
-					)
-				);
-
 				return;
 			}
 
@@ -219,10 +213,6 @@ class BLT_Activity_Log_Pruner {
 	 * @return void
 	 */
 	public static function maybe_request_overdue() {
-		if ( BLT_Activity_Log_Settings::retention_days() <= 0 ) {
-			return;
-		}
-
 		$state = BLT_Activity_Log_Settings::state();
 
 		if ( ! self::is_overdue( (int) $state['last_prune_at'], (string) $state['started_at'] ) ) {

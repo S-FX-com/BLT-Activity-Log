@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: BLT Activity Log 0.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/S-FX-com/BLT-Activity-Log/issues\n"
-"POT-Creation-Date: 2026-10-16 04:44+0000\n"
+"POT-Creation-Date: 2026-10-20 02:55+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -14,90 +14,100 @@ msgstr ""
 "X-Generator: bin/make-pot.js\n"
 "X-Domain: blt-activity-log\n"
 
-#: admin/class-blt-activity-log-admin.php:110
+#: admin/class-blt-activity-log-admin.php:1017
+msgid "This file is incomplete: a database error stopped it after %d entries. Download it again."
+msgstr ""
+
+#: admin/class-blt-activity-log-admin.php:1061
+msgid "Settings saved."
+msgstr ""
+
+#: admin/class-blt-activity-log-admin.php:1068
+msgid "Settings saved. Retention must be a whole number of days from 1 to 365, so it is %s day."
+msgid_plural "Settings saved. Retention must be a whole number of days from 1 to 365, so it is %s days."
+msgstr[0] ""
+msgstr[1] ""
+
+#: admin/class-blt-activity-log-admin.php:1075
+msgid "Log cleared: %s entry removed."
+msgid_plural "Log cleared: %s entries removed."
+msgstr[0] ""
+msgstr[1] ""
+
+#: admin/class-blt-activity-log-admin.php:1082
+msgid "%s entries were removed. There are more to remove, so the rest will be cleared in the background within a few minutes."
+msgstr ""
+
+#: admin/class-blt-activity-log-admin.php:1088
+msgid "Nothing was deleted: tick the box to confirm."
+msgstr ""
+
+#: admin/class-blt-activity-log-admin.php:1094
+msgid "Nothing was deleted: choose a valid date."
+msgstr ""
+
+#: admin/class-blt-activity-log-admin.php:1101
+msgid "%1$s entries match, which is more than one export can hold (%2$s). Narrow the filters, for example to a shorter date range, and export again."
+msgstr ""
+
+#: admin/class-blt-activity-log-admin.php:1131
+msgid "You do not have permission to do that."
+msgstr ""
+
+#: admin/class-blt-activity-log-admin.php:118
 msgid "Entries per page"
 msgstr ""
 
-#: admin/class-blt-activity-log-admin.php:142
+#: admin/class-blt-activity-log-admin.php:150
 msgid "View log"
 msgstr ""
 
-#: admin/class-blt-activity-log-admin.php:146
-#: admin/class-blt-activity-log-admin.php:357
+#: admin/class-blt-activity-log-admin.php:154
+#: admin/class-blt-activity-log-admin.php:366
 #: admin/views/header.php:53
 #: includes/class-blt-activity-log-formatter.php:299
 #: includes/class-blt-activity-log-module-settings.php:59
 msgid "Settings"
 msgstr ""
 
-#: admin/class-blt-activity-log-admin.php:250
+#: admin/class-blt-activity-log-admin.php:258
 msgid "You do not have permission to view the activity log."
 msgstr ""
 
-#: admin/class-blt-activity-log-admin.php:304
+#: admin/class-blt-activity-log-admin.php:312
 #: admin/views/header.php:51
 msgid "Log"
 msgstr ""
 
-#: admin/class-blt-activity-log-admin.php:323
+#: admin/class-blt-activity-log-admin.php:331
 msgid "Entry"
 msgstr ""
 
-#: admin/class-blt-activity-log-admin.php:482
+#: admin/class-blt-activity-log-admin.php:491
 msgid "Today"
 msgstr ""
 
-#: admin/class-blt-activity-log-admin.php:483
+#: admin/class-blt-activity-log-admin.php:492
 msgid "Yesterday"
 msgstr ""
 
-#: admin/class-blt-activity-log-admin.php:484
+#: admin/class-blt-activity-log-admin.php:493
 msgid "Last 7 days"
 msgstr ""
 
-#: admin/class-blt-activity-log-admin.php:485
+#: admin/class-blt-activity-log-admin.php:494
 msgid "Last 30 days"
 msgstr ""
 
-#: admin/class-blt-activity-log-admin.php:884
-msgid "Settings saved."
-msgstr ""
-
-#: admin/class-blt-activity-log-admin.php:89
-#: admin/class-blt-activity-log-admin.php:90
+#: admin/class-blt-activity-log-admin.php:97
+#: admin/class-blt-activity-log-admin.php:98
 #: admin/views/header.php:28
 #: includes/class-blt-activity-log-formatter.php:302
 #: includes/class-blt-activity-log-install.php:52
 #: includes/class-blt-activity-log-module-system.php:34
-#: includes/class-blt-activity-log-privacy.php:85
-#: includes/class-blt-activity-log-privacy.php:100
+#: includes/class-blt-activity-log-privacy.php:81
+#: includes/class-blt-activity-log-privacy.php:96
 msgid "BLT Activity Log"
-msgstr ""
-
-#: admin/class-blt-activity-log-admin.php:891
-msgid "Log cleared: %s entry removed."
-msgid_plural "Log cleared: %s entries removed."
-msgstr[0] ""
-msgstr[1] ""
-
-#: admin/class-blt-activity-log-admin.php:898
-msgid "%s entries were removed. There are more to remove, so the rest will be cleared in the background within a few minutes."
-msgstr ""
-
-#: admin/class-blt-activity-log-admin.php:904
-msgid "Nothing was deleted: tick the box to confirm."
-msgstr ""
-
-#: admin/class-blt-activity-log-admin.php:910
-msgid "Nothing was deleted: choose a valid date."
-msgstr ""
-
-#: admin/class-blt-activity-log-admin.php:917
-msgid "%1$s entries match, which is more than one export can hold (%2$s). Narrow the filters, for example to a shorter date range, and export again."
-msgstr ""
-
-#: admin/class-blt-activity-log-admin.php:947
-msgid "You do not have permission to do that."
 msgstr ""
 
 #: admin/class-blt-activity-log-list-table.php:115
@@ -122,12 +132,12 @@ msgstr ""
 #: admin/class-blt-activity-log-list-table.php:58
 #: admin/views/log.php:37
 #: admin/views/log.php:70
-#: includes/class-blt-activity-log-privacy.php:146
+#: includes/class-blt-activity-log-privacy.php:142
 msgid "Activity"
 msgstr ""
 
 #: admin/class-blt-activity-log-list-table.php:59
-#: includes/class-blt-activity-log-privacy.php:150
+#: includes/class-blt-activity-log-privacy.php:146
 msgid "Item"
 msgstr ""
 
@@ -318,12 +328,12 @@ msgstr ""
 
 #: admin/views/entry.php:96
 #: admin/views/settings.php:109
-#: includes/class-blt-activity-log-privacy.php:154
+#: includes/class-blt-activity-log-privacy.php:150
 msgid "IP address"
 msgstr ""
 
 #: admin/views/header.php:34
-#: admin/views/settings.php:199
+#: admin/views/settings.php:206
 msgid "Check for Updates"
 msgstr ""
 
@@ -497,95 +507,115 @@ msgid "Set by %s in wp-config.php. Change it there."
 msgstr ""
 
 #: admin/views/settings.php:185
-msgid "0 keeps entries forever. To lock this for compliance, define BLT_ACTIVITY_LOG_RETENTION_DAYS in wp-config.php."
+msgid "From 1 to 365 days. To lock this for compliance, define BLT_ACTIVITY_LOG_RETENTION_DAYS in wp-config.php."
 msgstr ""
 
-#: admin/views/settings.php:194
+#: admin/views/settings.php:190
+msgid "Dump"
+msgstr ""
+
+#: admin/views/settings.php:192
+msgid "Download a full dump"
+msgstr ""
+
+#: admin/views/settings.php:193
+msgid "Every entry as a CSV, with no filters and every column, including the full details. Entries older than the retention period are deleted automatically, so download a dump first if you need to keep them longer. A dump holds IP addresses and browsers, so keep it as carefully as the log itself. A cell that starts with = + - @ gets a leading apostrophe so a spreadsheet cannot run it; remove it if you import the file."
+msgstr ""
+
+#: admin/views/settings.php:201
 msgid "Updates"
 msgstr ""
 
-#: admin/views/settings.php:195
+#: admin/views/settings.php:202
 msgid "BLT Activity Log checks GitHub for a new version once a day, at midnight site time."
 msgstr ""
 
 #. translators: %s: the plugin version.
-#: admin/views/settings.php:205
+#: admin/views/settings.php:212
 msgid "Installed version: %s"
 msgstr ""
 
-#: admin/views/settings.php:215
+#: admin/views/settings.php:222
 msgid "Advanced"
 msgstr ""
 
-#: admin/views/settings.php:219
+#: admin/views/settings.php:226
 msgid "On uninstall"
 msgstr ""
 
-#: admin/views/settings.php:225
+#: admin/views/settings.php:232
 msgid "Delete all plugin data when the plugin is deleted"
 msgstr ""
 
-#: admin/views/settings.php:226
+#: admin/views/settings.php:233
 msgid "The log, the settings and the capability. Off by default, so deleting and reinstalling the plugin loses nothing."
 msgstr ""
 
-#: admin/views/settings.php:235
+#: admin/views/settings.php:242
 msgid "Save changes"
 msgstr ""
 
-#: admin/views/settings.php:244
+#: admin/views/settings.php:251
 msgid "Clear log"
 msgstr ""
 
-#: admin/views/settings.php:245
+#: admin/views/settings.php:252
 msgid "Permanently delete entries. A record that the log was cleared is kept, so a cleared log is never silently empty."
 msgstr ""
 
-#: admin/views/settings.php:247
+#: admin/views/settings.php:254
 msgid "Cannot be undone"
 msgstr ""
 
-#: admin/views/settings.php:260
+#: admin/views/settings.php:267
 msgid "%1$s entry older than %2$s will be permanently deleted."
 msgid_plural "%1$s entries older than %2$s will be permanently deleted."
 msgstr[0] ""
 msgstr[1] ""
 
-#: admin/views/settings.php:267
+#: admin/views/settings.php:274
 msgid "All %s entry will be permanently deleted."
 msgid_plural "All %s entries will be permanently deleted."
 msgstr[0] ""
 msgstr[1] ""
 
-#: admin/views/settings.php:275
+#: admin/views/settings.php:280
+msgid "Download a full dump first"
+msgstr ""
+
+#: admin/views/settings.php:280
+msgid "if you may want these entries again."
+msgstr ""
+
+#: admin/views/settings.php:283
 msgid "I understand this cannot be undone."
 msgstr ""
 
-#: admin/views/settings.php:278
+#: admin/views/settings.php:286
 msgid "Delete these entries"
 msgstr ""
 
-#: admin/views/settings.php:279
+#: admin/views/settings.php:287
 msgid "Cancel"
 msgstr ""
 
-#: admin/views/settings.php:285
+#: admin/views/settings.php:293
 msgid "All entries"
 msgstr ""
 
-#: admin/views/settings.php:289
+#: admin/views/settings.php:297
 msgid "Entries older than"
 msgstr ""
 
-#: admin/views/settings.php:290
+#: admin/views/settings.php:298
 msgid "Delete entries older than this date"
 msgstr ""
 
-#: admin/views/settings.php:294
+#: admin/views/settings.php:302
 msgid "Preview what will be deleted"
 msgstr ""
 
-#: admin/views/settings.php:296
+#: admin/views/settings.php:304
 msgid "Nothing is deleted until you confirm on the next screen."
 msgstr ""
 
@@ -1495,16 +1525,16 @@ msgstr ""
 msgid "Accounts created, edited or deleted, role changes, password changes and application passwords."
 msgstr ""
 
-#: includes/class-blt-activity-log-privacy.php:142
+#: includes/class-blt-activity-log-privacy.php:138
 msgid "Time"
 msgstr ""
 
-#: includes/class-blt-activity-log-privacy.php:207
+#: includes/class-blt-activity-log-privacy.php:203
 msgid "Activity log entries are kept as a record of site security. The IP address and browser were removed from them."
 msgstr ""
 
 #: includes/class-blt-activity-log-privacy.php:50
-#: includes/class-blt-activity-log-privacy.php:138
+#: includes/class-blt-activity-log-privacy.php:134
 msgid "Activity log"
 msgstr ""
 
@@ -1529,15 +1559,11 @@ msgid "The record includes the IP address and the browser used."
 msgstr ""
 
 #. translators: %d: number of days entries are kept.
-#: includes/class-blt-activity-log-privacy.php:66
+#: includes/class-blt-activity-log-privacy.php:65
 msgid "Entries are deleted automatically after %d day."
 msgid_plural "Entries are deleted automatically after %d days."
 msgstr[0] ""
 msgstr[1] ""
-
-#: includes/class-blt-activity-log-privacy.php:71
-msgid "Entries are kept until a site administrator clears them."
-msgstr ""
 
 #: includes/class-blt-activity-log.php:138
 msgid "BLT Activity Log does not support network activation, so it is not recording anything. Deactivate it for the network and activate it on each site you want to log."

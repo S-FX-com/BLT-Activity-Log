@@ -178,10 +178,42 @@ class Test_Settings extends TestCase {
 	 * @return void
 	 */
 	public function test_retention_is_clamped() {
-		$this->assertSame( 0, BLT_Activity_Log_Settings::save( array( 'retention_days' => '0' ) )['retention_days'], '0 keeps forever.' );
-		$this->assertSame( 3650, BLT_Activity_Log_Settings::save( array( 'retention_days' => '99999' ) )['retention_days'] );
-		$this->assertSame( 5, BLT_Activity_Log_Settings::save( array( 'retention_days' => '-5' ) )['retention_days'], 'absint, not a negative.' );
-		$this->assertSame( 0, BLT_Activity_Log_Settings::save( array( 'retention_days' => 'abc' ) )['retention_days'] );
+		$this->assertSame( 365, BLT_Activity_Log_Settings::save( array( 'retention_days' => '99999' ) )['retention_days'], 'Capped at a year.' );
+		$this->assertSame( 365, BLT_Activity_Log_Settings::save( array( 'retention_days' => '366' ) )['retention_days'] );
+		$this->assertSame( 365, BLT_Activity_Log_Settings::save( array( 'retention_days' => '365' ) )['retention_days'] );
+		$this->assertSame( 1, BLT_Activity_Log_Settings::save( array( 'retention_days' => '1' ) )['retention_days'] );
+		$this->assertSame( 365, BLT_Activity_Log_Settings::save( array( 'retention_days' => '365.9' ) )['retention_days'], 'A decimal is cut to whole days.' );
+	}
+
+	/**
+	 * There is no "keep forever", and a value that means nothing never shortens the log.
+	 *
+	 * @return void
+	 */
+	public function test_zero_and_text_are_refused() {
+		BLT_Activity_Log_Settings::save( array( 'retention_days' => 120 ) );
+
+		foreach ( array( '0', 0, 'abc', '', ' ', '-5', -1, '-0.5', '30days', array( 30 ), null ) as $junk ) {
+			$this->assertSame( 120, BLT_Activity_Log_Settings::save( array( 'retention_days' => $junk ) )['retention_days'], var_export( $junk, true ) . ' leaves the value alone.' );
+		}
+
+		$this->assertSame( 120, BLT_Activity_Log_Settings::retention_days() );
+	}
+
+	/**
+	 * Stored or configured garbage reads as the default, never as zero.
+	 *
+	 * @return void
+	 */
+	public function test_clamp_retention() {
+		$this->assertSame( 90, BLT_Activity_Log_Settings::clamp_retention( 0 ) );
+		$this->assertSame( 90, BLT_Activity_Log_Settings::clamp_retention( -3 ) );
+		$this->assertSame( 90, BLT_Activity_Log_Settings::clamp_retention( 'abc' ) );
+		$this->assertSame( 90, BLT_Activity_Log_Settings::clamp_retention( null ) );
+		$this->assertSame( 1, BLT_Activity_Log_Settings::clamp_retention( '1' ) );
+		$this->assertSame( 30, BLT_Activity_Log_Settings::clamp_retention( '30' ) );
+		$this->assertSame( 365, BLT_Activity_Log_Settings::clamp_retention( 3650 ) );
+		$this->assertSame( 365, BLT_Activity_Log_Settings::clamp_retention( 1e9 ) );
 	}
 
 	/**
@@ -250,7 +282,7 @@ class Test_Settings extends TestCase {
 	}
 
 	/**
-	 * A constant of zero means keep forever, and absurd values are clamped.
+	 * Absurd constant values are clamped to a year.
 	 *
 	 * @runInSeparateProcess
 	 * @preserveGlobalState disabled
@@ -260,7 +292,21 @@ class Test_Settings extends TestCase {
 	public function test_constant_is_clamped() {
 		define( 'BLT_ACTIVITY_LOG_RETENTION_DAYS', 99999 );
 
-		$this->assertSame( 3650, BLT_Activity_Log_Settings::retention_days() );
+		$this->assertSame( 365, BLT_Activity_Log_Settings::retention_days() );
+	}
+
+	/**
+	 * A constant of zero is not "forever": it reads as the default.
+	 *
+	 * @runInSeparateProcess
+	 * @preserveGlobalState disabled
+	 *
+	 * @return void
+	 */
+	public function test_constant_of_zero_reads_as_the_default() {
+		define( 'BLT_ACTIVITY_LOG_RETENTION_DAYS', 0 );
+
+		$this->assertSame( 90, BLT_Activity_Log_Settings::retention_days() );
 	}
 
 	/**

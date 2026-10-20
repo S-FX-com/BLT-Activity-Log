@@ -43,8 +43,11 @@ foreach ( $blt_activity_log_roles->role_objects as $blt_activity_log_role ) {
 	}
 }
 
-// Each person's "entries per page" screen option.
-delete_metadata( 'user', 0, 'blt_activity_log_per_page', '', true );
+// Each person's "entries per page" screen option. User meta is shared by every site of a network,
+// so another site that still runs the plugin keeps its people's setting.
+if ( ! is_multisite() ) {
+	delete_metadata( 'user', 0, 'blt_activity_log_per_page', '', true );
+}
 
 // Scheduled jobs, with any arguments.
 foreach ( array( 'blt_activity_log_prune', 'blt_activity_log_snapshot', 'blt_activity_log_prune_continue' ) as $blt_activity_log_hook ) {

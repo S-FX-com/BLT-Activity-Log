@@ -373,7 +373,8 @@ class BLT_Activity_Log_Query {
 	 * @param array $args      Normalized arguments.
 	 * @param int   $before_id Return only entries with a smaller id (0 = no bound).
 	 * @param int   $limit     Batch size.
-	 * @return array<int,object>
+	 * @return array<int,object>|null The rows (empty when there are no more), or null when the
+	 *                                 query failed, so a caller never mistakes an error for the end.
 	 */
 	public static function export_batch( array $args, $before_id, $limit ) {
 		global $wpdb;
@@ -393,7 +394,12 @@ class BLT_Activity_Log_Query {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table is ours; values are bound.
 		$rows = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table} WHERE {$sql} ORDER BY id DESC LIMIT %d", $params ) );
 
-		return is_array( $rows ) ? $rows : array();
+		// wpdb::get_results() returns an empty array, not null, when the query fails; only last_error says so.
+		if ( ! is_array( $rows ) || '' !== (string) $wpdb->last_error ) {
+			return null;
+		}
+
+		return $rows;
 	}
 
 	/**

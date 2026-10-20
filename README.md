@@ -32,10 +32,10 @@ Updates arrive through the normal Plugins screen. The plugin checks GitHub once 
 | Users | Accounts created, edited and deleted; role changes; password changes and resets; application passwords created and revoked. No secret value is ever stored. |
 | Sign-ins | Signed in and signed out. Failed sign-ins are off by default (a brute-force attack would flood the log). |
 | Out-of-band changes | A daily snapshot notices a plugin, theme or core version that changed outside WordPress (for example by FTP) and logs it as "changed outside WordPress". |
-| Retention | Entries older than 90 days are removed once a day, in small batches that cannot time out. |
+| Retention | Entries older than 90 days are removed once a day, in small batches that cannot time out. Adjustable per site, from 1 to 365 days. |
 | IP address | Stored in full. Switch to anonymized or off in Settings. Cloudflare's `CF-Connecting-IP` is trusted only when the request really comes from a Cloudflare address. |
 | Access | Administrators can read the log. Settings, export and clearing the log need `manage_options`. |
-| Export | **Export CSV** on the Log tab streams the filtered log, up to 50,000 rows. Cells that could be read as spreadsheet formulas are neutralized. |
+| Export and dump | **Export CSV** on the Log tab streams the filtered log, up to 50,000 rows. **Download a full dump** on the Settings tab streams every entry, unfiltered and uncapped, with every column including the full details, for keeping a copy before entries age out. Cells that could be read as spreadsheet formulas are neutralized in both. |
 | Privacy | A suggested privacy policy paragraph, a personal data exporter, and an eraser that removes the IP address and browser from a person's entries (the entries stay, as a security record). |
 
 Entries that change nothing are not logged: a save that altered no tracked field produces no row. Rapid repeat saves by the same person (the block editor saves a post and then its meta boxes in a second request) merge into one entry within a 60-second window.
@@ -53,7 +53,8 @@ Entries that change nothing are not logged: a save that altered no tracked field
 | Settings changes | WordPress settings screens | Or **any option changed by a signed-in user**, which also catches other plugins' settings forms. Noisier. Changes from cron and from visitors are never logged. |
 | IP address | Store in full | Or anonymized, or off. Applies to new entries. |
 | Browser | Stored | The user agent, shortened to 255 characters. |
-| Keep entries for | 90 days | `0` keeps entries forever. |
+| Keep entries for | 90 days | 1 to 365. There is no "forever": download a dump before entries age out if you need a longer record. |
+| Dump | | **Download a full dump** (also offered before you clear the log). |
 | On uninstall | Keep everything | See [Data](#data). |
 
 ### Constants
@@ -62,7 +63,7 @@ Define these in `wp-config.php`.
 
 | Constant | Effect |
 | --- | --- |
-| `BLT_ACTIVITY_LOG_RETENTION_DAYS` | Fixes retention (for compliance). The setting then shows as locked. |
+| `BLT_ACTIVITY_LOG_RETENTION_DAYS` | Fixes retention (for compliance), from 1 to 365; anything outside that range is clamped, and 0 reads as the 90-day default. The setting then shows as locked. |
 | `BLT_ACTIVITY_LOG_GITHUB_TOKEN` | Only for a private fork of the repository: a read-only GitHub token for the updater. Not needed for the public release. |
 
 ### Writing entries from another plugin
@@ -119,6 +120,7 @@ Repository conventions for contributors and AI sessions are in [CLAUDE.md](CLAUD
 - **Buffer, then write once.** Listeners buffer entries; the buffer is merged per request and written on `shutdown` in one multi-row insert. A failed write never reaches the visitor: it costs one `error_log()` line.
 - **A page view costs nothing.** Nothing queries the database at boot (settings are autoloaded) and no listener does work unless its hook fires. A front-end page view runs zero queries from this plugin.
 - **Redaction is by key.** Option names, meta keys and array keys matching the redaction pattern are recorded as changed with the value hidden. A short list (password hashes, session tokens, application password values, `post_password`) is always hidden.
+- **A year at most, and no "forever".** The log is a working record, so retention runs from 1 to 365 days and a value of 0 or text is refused rather than read as "keep everything" or "delete everything". A site that needs a longer record downloads a full dump before entries age out; the dump is the stored data itself (including each entry's details), not the on-screen export.
 - **Content is summarized, not stored.** WordPress revisions already keep post content. An entry stores character counts and a block histogram, and links to the revision comparison when revisions exist.
 - **Tools submenu.** The log is a submenu of Tools, not a top-level menu. The BLT family layer accepts a relative menu URL (`tools.php?page=blt-activity-log`), so no change to the shared layer was needed.
 - **`WP_List_Table` inside a `.blt-card`.** The design system has no table component. The log uses core's list table, styled with the design tokens in `admin/assets/blt-activity-log-admin.css`, so keyboard behavior, sorting, pagination and Screen Options are core's.
@@ -132,6 +134,7 @@ Repository conventions for contributors and AI sessions are in [CLAUDE.md](CLAUD
 - **Options:** `blt_activity_log_settings`, `blt_activity_log_db_version` (autoloaded), `blt_activity_log_snapshot`, `blt_activity_log_state`.
 - **Capability:** `blt_view_activity_log`. **Cron:** `blt_activity_log_prune` and `blt_activity_log_snapshot`, both daily, plus a one-off continuation when a prune runs out of time.
 - **Deactivation** unschedules the cron events and keeps all data.
+- **Dump** is a download, not a stored file: nothing is written to the server.
 - **Uninstall** deletes nothing unless **Delete all plugin data when the plugin is deleted** is on. When it is, the table, the four options, the capability, the screen-option setting of each person and the cron events are removed. The shared BLT family store is never touched.
 - **Multisite:** deferred. Network activation is refused.
 

@@ -168,7 +168,7 @@ $blt_retention   = BLT_Activity_Log_Settings::retention_days();
 				<div class="blt-field">
 					<div class="blt-field-label"><label for="blt-al-retention"><?php esc_html_e( 'Keep entries for', 'blt-activity-log' ); ?></label></div>
 					<div>
-						<input type="number" id="blt-al-retention" class="small-text" min="0" max="<?php echo esc_attr( (string) BLT_Activity_Log_Settings::MAX_RETENTION_DAYS ); ?>" name="<?php echo esc_attr( $blt_field ); ?>[retention_days]" value="<?php echo esc_attr( (string) $blt_retention ); ?>" <?php disabled( $locked ); ?> />
+						<input type="number" id="blt-al-retention" class="small-text" min="<?php echo esc_attr( (string) BLT_Activity_Log_Settings::MIN_RETENTION_DAYS ); ?>" max="<?php echo esc_attr( (string) BLT_Activity_Log_Settings::MAX_RETENTION_DAYS ); ?>" name="<?php echo esc_attr( $blt_field ); ?>[retention_days]" value="<?php echo esc_attr( (string) $blt_retention ); ?>" <?php disabled( $locked ); ?> />
 						<?php esc_html_e( 'days', 'blt-activity-log' ); ?>
 						<?php if ( $locked ) : ?>
 							<p class="blt-field-desc">
@@ -182,8 +182,15 @@ $blt_retention   = BLT_Activity_Log_Settings::retention_days();
 								?>
 							</p>
 						<?php else : ?>
-							<p class="blt-field-desc"><?php esc_html_e( '0 keeps entries forever. To lock this for compliance, define BLT_ACTIVITY_LOG_RETENTION_DAYS in wp-config.php.', 'blt-activity-log' ); ?></p>
+							<p class="blt-field-desc"><?php esc_html_e( 'From 1 to 365 days. To lock this for compliance, define BLT_ACTIVITY_LOG_RETENTION_DAYS in wp-config.php.', 'blt-activity-log' ); ?></p>
 						<?php endif; ?>
+					</div>
+				</div>
+				<div class="blt-field">
+					<div class="blt-field-label"><?php esc_html_e( 'Dump', 'blt-activity-log' ); ?></div>
+					<div>
+						<a class="button" href="<?php echo esc_url( $dump_url ); ?>"><?php esc_html_e( 'Download a full dump', 'blt-activity-log' ); ?></a>
+						<p class="blt-field-desc"><?php esc_html_e( 'Every entry as a CSV, with no filters and every column, including the full details. Entries older than the retention period are deleted automatically, so download a dump first if you need to keep them longer. A dump holds IP addresses and browsers, so keep it as carefully as the log itself. A cell that starts with = + - @ gets a leading apostrophe so a spreadsheet cannot run it; remove it if you import the file.', 'blt-activity-log' ); ?></p>
 					</div>
 				</div>
 			</div>
@@ -270,6 +277,7 @@ $blt_retention   = BLT_Activity_Log_Settings::retention_days();
 						}
 						?>
 					</p>
+					<p class="blt-field-desc"><a href="<?php echo esc_url( $dump_url ); ?>"><?php esc_html_e( 'Download a full dump first', 'blt-activity-log' ); ?></a> <?php esc_html_e( 'if you may want these entries again.', 'blt-activity-log' ); ?></p>
 					<label>
 						<input type="checkbox" name="clear_confirm" value="1" />
 						<?php esc_html_e( 'I understand this cannot be undone.', 'blt-activity-log' ); ?>

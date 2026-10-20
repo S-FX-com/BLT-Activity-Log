@@ -206,7 +206,7 @@ Seconds one prune pass may spend deleting before it stops and schedules a contin
 
 ### `blt_activity_log_export_limit`
 
-The most rows one CSV export may contain. Above it the export is refused with a notice asking for narrower filters, not truncated.
+The most rows one filtered CSV export may contain. Above it the export is refused with a notice asking for narrower filters, not truncated. The full dump on the Settings tab is not an export and has no row cap.
 
 | Argument | Type | Default | Description |
 | --- | --- | --- | --- |

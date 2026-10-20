@@ -22,6 +22,7 @@ class BLT_Activity_Log_Admin {
 	const NONCE_SETTINGS = 'blt_activity_log_settings';
 	const NONCE_CLEAR    = 'blt_activity_log_clear';
 	const NONCE_EXPORT   = 'blt_activity_log_export';
+	const NONCE_DUMP     = 'blt_activity_log_dump';
 
 	/**
 	 * Distinct users above which the User filter becomes a text field.
@@ -37,6 +38,12 @@ class BLT_Activity_Log_Admin {
 	 * Rows read per export batch.
 	 */
 	const EXPORT_BATCH = 1000;
+
+	/**
+	 * Rows read per dump batch. Smaller than the export's: a dump reads every
+	 * column, and an entry's details can run to 64 KB.
+	 */
+	const DUMP_BATCH = 250;
 
 	/**
 	 * Singleton instance.
@@ -75,6 +82,7 @@ class BLT_Activity_Log_Admin {
 		add_action( 'admin_init', array( $this, 'handle_post' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_action( 'admin_post_blt_activity_log_export', array( $this, 'handle_export' ) );
+		add_action( 'admin_post_blt_activity_log_dump', array( $this, 'handle_dump' ) );
 		add_filter( 'plugin_action_links_' . BLT_ACTIVITY_LOG_BASENAME, array( $this, 'plugin_action_links' ) );
 		add_filter( 'set_screen_option_' . self::PER_PAGE_OPTION, array( $this, 'set_screen_option' ), 10, 3 );
 	}
@@ -351,7 +359,8 @@ class BLT_Activity_Log_Admin {
 			? BLT_Family_Updates::last_check_time( $GLOBALS['blt_activity_log_update_checker'] )
 			: 0;
 
-		$clear = $this->clear_preview();
+		$clear    = $this->clear_preview();
+		$dump_url = wp_nonce_url( admin_url( 'admin-post.php?action=blt_activity_log_dump' ), self::NONCE_DUMP );
 
 		$tab = 'settings';
 		$sub = __( 'Settings', 'blt-activity-log' );
@@ -618,7 +627,25 @@ class BLT_Activity_Log_Admin {
 
 		BLT_Activity_Log_Settings::save( $raw );
 
-		$this->redirect( array( 'tab' => 'settings' ), 'saved' );
+		// A retention value the form could not use (zero, text, a negative, over a year) is not saved as typed; say so.
+		$notice = 'saved';
+		$days   = BLT_Activity_Log_Settings::retention_days();
+
+		if ( isset( $raw['retention_days'] ) && ! BLT_Activity_Log_Settings::retention_locked() ) {
+			$posted = ( is_scalar( $raw['retention_days'] ) && is_numeric( $raw['retention_days'] ) ) ? (int) $raw['retention_days'] : 0;
+
+			if ( $posted !== $days ) {
+				$notice = 'saved_retention';
+			}
+		}
+
+		$this->redirect(
+			array(
+				'tab' => 'settings',
+				'n'   => $days,
+			),
+			$notice
+		);
 	}
 
 	/**
@@ -768,16 +795,37 @@ class BLT_Activity_Log_Admin {
 			exit;
 		}
 
-		nocache_headers();
-		header( 'Content-Type: text/csv; charset=utf-8' );
-		header( 'Content-Disposition: attachment; filename="blt-activity-log-' . gmdate( 'Ymd-His' ) . '.csv"' );
-		header( 'X-Content-Type-Options: nosniff' );
+		// Recorded before the first byte goes out, so a download that is cancelled halfway is still on the record.
+		// The file is everything up to the newest entry as of now, which also leaves out this entry itself.
+		$upto = BLT_Activity_Log_Query::max_id();
 
-		while ( ob_get_level() > 0 ) {
-			ob_end_clean();
-		}
+		BLT_Activity_Log_Logger::write_now(
+			array(
+				'category'     => 'system',
+				'action'       => 'exported',
+				'object_type'  => 'log',
+				'object_key'   => 'entries',
+				'object_label' => 'BLT Activity Log',
+				'details'      => array(
+					'changes' => array(
+						array(
+							'field'  => 'entries_exported',
+							'before' => '',
+							'after'  => (string) $total,
+						),
+						array(
+							'field'  => 'filters',
+							'before' => '',
+							'after'  => empty( $state ) ? '' : http_build_query( array_intersect_key( $state, array_flip( array( 'activity', 'user', 'from', 'to', 's' ) ) ) ),
+						),
+					),
+				),
+			)
+		);
 
-		$header = BLT_Activity_Log_Csv::line(
+		$this->begin_csv( 'blt-activity-log' );
+
+		echo BLT_Activity_Log_Csv::line( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSV, escaped cell by cell in Csv::line().
 			array(
 				'ID',
 				'Time (site)',
@@ -795,45 +843,59 @@ class BLT_Activity_Log_Admin {
 			)
 		);
 
-		echo $header; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSV, escaped cell by cell in Csv::line().
-
-		$written   = 0;
-		$before_id = 0;
-		$fetched   = 0;
-
-		do {
-			$rows = BLT_Activity_Log_Query::export_batch( $args, $before_id, self::EXPORT_BATCH );
-
-			foreach ( $rows as $row ) {
-				$line = BLT_Activity_Log_Csv::line(
-					array(
-						(int) $row->id,
-						BLT_Activity_Log_Formatter::site_time( (string) $row->created_at, 'Y-m-d H:i:s' ),
-						(string) $row->created_at,
-						(string) $row->user_login,
-						(string) $row->user_role,
-						(string) $row->category,
-						(string) $row->action,
-						(string) $row->object_type,
-						null !== $row->object_id ? (string) $row->object_id : (string) $row->object_key,
-						(string) $row->object_label,
-						BLT_Activity_Log_Formatter::summary( $row ),
-						(string) $row->context,
-						(string) $row->ip,
-					)
+		$this->stream_rows(
+			$args,
+			$upto,
+			self::EXPORT_BATCH,
+			function ( $row ) {
+				return array(
+					(int) $row->id,
+					BLT_Activity_Log_Formatter::site_time( (string) $row->created_at, 'Y-m-d H:i:s' ),
+					(string) $row->created_at,
+					(string) $row->user_login,
+					(string) $row->user_role,
+					(string) $row->category,
+					(string) $row->action,
+					(string) $row->object_type,
+					null !== $row->object_id ? (string) $row->object_id : (string) $row->object_key,
+					(string) $row->object_label,
+					BLT_Activity_Log_Formatter::summary( $row ),
+					(string) $row->context,
+					(string) $row->ip,
 				);
-
-				echo $line; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSV, escaped cell by cell in Csv::line().
-
-				++$written;
-				$before_id = (int) $row->id;
 			}
+		);
 
-			flush();
+		exit;
+	}
 
-			$fetched = count( $rows );
-		} while ( $fetched >= self::EXPORT_BATCH );
+	/**
+	 * Stream the whole log as CSV: no filters, no row cap, every column.
+	 *
+	 * The log keeps at most a year. For a longer record, a site downloads a
+	 * dump before entries age out. Unlike the export, which is a view of what
+	 * is on screen (summary text, capped), the dump is the stored data itself,
+	 * including each entry's full `details` JSON, so it can be kept as an
+	 * archive. Secrets are already hidden in what is stored.
+	 *
+	 * @return void
+	 */
+	public function handle_dump() {
+		$this->require_manage_options();
 
+		check_admin_referer( self::NONCE_DUMP );
+
+		// A big log can outlast the default time limit. It streams in keyset batches, so memory stays flat.
+		if ( function_exists( 'set_time_limit' ) ) {
+			set_time_limit( 0 ); // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged -- A long download of the owner's own data.
+		}
+
+		$args  = BLT_Activity_Log_Query::normalize_args( array() );
+		$upto  = BLT_Activity_Log_Query::max_id();
+		$total = BLT_Activity_Log_Query::count( $args );
+
+		// Recorded before the first byte goes out, so a download that is cancelled halfway is still on the record.
+		// The file is everything up to the newest entry as of now, which also leaves out this entry itself.
 		BLT_Activity_Log_Logger::write_now(
 			array(
 				'category'     => 'system',
@@ -846,19 +908,134 @@ class BLT_Activity_Log_Admin {
 						array(
 							'field'  => 'entries_exported',
 							'before' => '',
-							'after'  => (string) $written,
+							'after'  => (string) $total,
 						),
 						array(
-							'field'  => 'filters',
+							'field'  => 'scope',
 							'before' => '',
-							'after'  => empty( $state ) ? '' : http_build_query( array_intersect_key( $state, array_flip( array( 'activity', 'user', 'from', 'to', 's' ) ) ) ),
+							'after'  => 'full dump',
 						),
 					),
 				),
 			)
 		);
 
+		$this->begin_csv( 'blt-activity-log-dump' );
+
+		echo BLT_Activity_Log_Csv::line( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSV, escaped cell by cell in Csv::line().
+			array(
+				'ID',
+				'Created (UTC)',
+				'Last saved (UTC)',
+				'Saves merged',
+				'User ID',
+				'User',
+				'Role',
+				'Category',
+				'Action',
+				'Object type',
+				'Object ID',
+				'Object key',
+				'Label',
+				'Context',
+				'IP',
+				'Browser',
+				'Details (JSON)',
+			)
+		);
+
+		$this->stream_rows(
+			$args,
+			$upto,
+			self::DUMP_BATCH,
+			function ( $row ) {
+				return array(
+					(int) $row->id,
+					(string) $row->created_at,
+					(string) $row->last_at,
+					(int) $row->occurrences,
+					(int) $row->user_id,
+					(string) $row->user_login,
+					(string) $row->user_role,
+					(string) $row->category,
+					(string) $row->action,
+					(string) $row->object_type,
+					null !== $row->object_id ? (string) $row->object_id : '',
+					null !== $row->object_key ? (string) $row->object_key : '',
+					(string) $row->object_label,
+					(string) $row->context,
+					null !== $row->ip ? (string) $row->ip : '',
+					null !== $row->user_agent ? (string) $row->user_agent : '',
+					null !== $row->details ? (string) $row->details : '',
+				);
+			}
+		);
+
 		exit;
+	}
+
+	/**
+	 * Start a CSV download: the headers, and no output buffer in the way.
+	 *
+	 * @param string $basename File name without the date and extension.
+	 * @return void
+	 */
+	private function begin_csv( $basename ) {
+		nocache_headers();
+		header( 'Content-Type: text/csv; charset=utf-8' );
+		header( 'Content-Disposition: attachment; filename="' . $basename . '-' . gmdate( 'Ymd-His' ) . '.csv"' );
+		header( 'X-Content-Type-Options: nosniff' );
+
+		while ( ob_get_level() > 0 ) {
+			ob_end_clean();
+		}
+	}
+
+	/**
+	 * Write the matching entries as CSV lines, newest first, in keyset batches.
+	 *
+	 * Only entries up to `$upto` are written, so the file is one consistent
+	 * snapshot however long it takes. If a query fails, a last line says the
+	 * file is incomplete (and the error is logged) instead of the file ending as
+	 * if it were whole.
+	 *
+	 * @param array    $args  Normalized query arguments.
+	 * @param int      $upto  Highest entry id to include.
+	 * @param int      $batch Rows read per query.
+	 * @param callable $cells Takes a row, returns the cells of its line.
+	 * @return int Rows written.
+	 */
+	private function stream_rows( array $args, $upto, $batch, callable $cells ) {
+		$written   = 0;
+		$before_id = (int) $upto + 1;
+
+		do {
+			$rows = BLT_Activity_Log_Query::export_batch( $args, $before_id, $batch );
+
+			if ( null === $rows ) {
+				/* translators: %d: number of entries written before the error. */
+				$message = sprintf( __( 'This file is incomplete: a database error stopped it after %d entries. Download it again.', 'blt-activity-log' ), $written );
+
+				echo BLT_Activity_Log_Csv::line( array( 'ERROR', $message ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSV, escaped cell by cell in Csv::line().
+
+				BLT_Activity_Log_Logger::report( new RuntimeException( 'export stopped after ' . $written . ' entries' ) );
+
+				return $written;
+			}
+
+			foreach ( $rows as $row ) {
+				echo BLT_Activity_Log_Csv::line( call_user_func( $cells, $row ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSV, escaped cell by cell in Csv::line().
+
+				++$written;
+				$before_id = (int) $row->id;
+			}
+
+			flush();
+
+			$fetched = count( $rows );
+		} while ( $fetched >= $batch );
+
+		return $written;
 	}
 
 	/**
@@ -882,6 +1059,13 @@ class BLT_Activity_Log_Admin {
 				return array(
 					'type'    => 'success',
 					'message' => __( 'Settings saved.', 'blt-activity-log' ),
+				);
+
+			case 'saved_retention':
+				return array(
+					'type'    => 'warning',
+					/* translators: %s: number of days retention is set to. */
+					'message' => sprintf( _n( 'Settings saved. Retention must be a whole number of days from 1 to 365, so it is %s day.', 'Settings saved. Retention must be a whole number of days from 1 to 365, so it is %s days.', $count, 'blt-activity-log' ), number_format_i18n( $count ) ),
 				);
 
 			case 'cleared':

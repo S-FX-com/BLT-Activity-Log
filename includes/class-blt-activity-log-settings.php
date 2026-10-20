@@ -27,9 +27,13 @@ class BLT_Activity_Log_Settings {
 	const STATE_OPTION = 'blt_activity_log_state';
 
 	/**
-	 * Highest retention that can be saved, in days.
+	 * Fewest and most days entries can be kept, and the default. There is no
+	 * "keep forever": the log is a working record, and a site that needs a
+	 * longer one downloads a dump before entries age out.
 	 */
-	const MAX_RETENTION_DAYS = 3650;
+	const MIN_RETENTION_DAYS     = 1;
+	const MAX_RETENTION_DAYS     = 365;
+	const DEFAULT_RETENTION_DAYS = 90;
 
 	/**
 	 * The modules a site owner can switch, plus the nested failed-sign-in
@@ -63,7 +67,7 @@ class BLT_Activity_Log_Settings {
 			'modules'                  => self::default_modules(),
 			'settings_scope'           => 'core',
 			'excluded_post_types'      => array(),
-			'retention_days'           => 90,
+			'retention_days'           => self::DEFAULT_RETENTION_DAYS,
 			'ip_mode'                  => 'full',
 			'store_user_agent'         => true,
 			'delete_data_on_uninstall' => false,
@@ -140,18 +144,37 @@ class BLT_Activity_Log_Settings {
 	}
 
 	/**
-	 * Retention in days; 0 keeps entries forever.
+	 * Retention in days, always between 1 and 365.
 	 *
-	 * The wp-config constant wins over the stored setting.
+	 * The wp-config constant wins over the stored setting. A value that is not
+	 * a whole number of days (0, negative, text) is not trusted to mean
+	 * anything: it reads as the default, so a bad value can never turn into
+	 * "delete everything older than a day".
 	 *
 	 * @return int
 	 */
 	public static function retention_days() {
 		if ( self::retention_locked() ) {
-			return max( 0, min( self::MAX_RETENTION_DAYS, (int) BLT_ACTIVITY_LOG_RETENTION_DAYS ) );
+			return self::clamp_retention( BLT_ACTIVITY_LOG_RETENTION_DAYS );
 		}
 
-		return max( 0, min( self::MAX_RETENTION_DAYS, (int) self::get( 'retention_days', 90 ) ) );
+		return self::clamp_retention( self::get( 'retention_days', self::DEFAULT_RETENTION_DAYS ) );
+	}
+
+	/**
+	 * A retention value within bounds.
+	 *
+	 * @param mixed $days Raw value.
+	 * @return int Whole days, 1 to 365; the default when the value is not a positive whole number.
+	 */
+	public static function clamp_retention( $days ) {
+		$days = is_numeric( $days ) ? (int) $days : 0;
+
+		if ( $days < self::MIN_RETENTION_DAYS ) {
+			return self::DEFAULT_RETENTION_DAYS;
+		}
+
+		return min( self::MAX_RETENTION_DAYS, $days );
 	}
 
 	/**
@@ -200,8 +223,9 @@ class BLT_Activity_Log_Settings {
 			$clean['excluded_post_types'] = self::sanitize_slugs( $input['excluded_post_types'] );
 		}
 
-		if ( isset( $input['retention_days'] ) && ! self::retention_locked() ) {
-			$clean['retention_days'] = max( 0, min( self::MAX_RETENTION_DAYS, absint( $input['retention_days'] ) ) );
+		// Zero, a negative number or text is refused and the current value stays: a typo can never shorten the log.
+		if ( isset( $input['retention_days'] ) && ! self::retention_locked() && is_scalar( $input['retention_days'] ) && is_numeric( $input['retention_days'] ) && (int) $input['retention_days'] >= self::MIN_RETENTION_DAYS ) {
+			$clean['retention_days'] = self::clamp_retention( $input['retention_days'] );
 		}
 
 		if ( isset( $input['ip_mode'] ) ) {

@@ -59,17 +59,13 @@ class BLT_Activity_Log_Privacy {
 			$text .= '<p>' . esc_html__( 'The record includes the IP address and the browser used.', 'blt-activity-log' ) . '</p>';
 		}
 
-		if ( $days > 0 ) {
-			$text .= '<p>' . esc_html(
-				sprintf(
-					/* translators: %d: number of days entries are kept. */
-					_n( 'Entries are deleted automatically after %d day.', 'Entries are deleted automatically after %d days.', $days, 'blt-activity-log' ),
-					$days
-				)
-			) . '</p>';
-		} else {
-			$text .= '<p>' . esc_html__( 'Entries are kept until a site administrator clears them.', 'blt-activity-log' ) . '</p>';
-		}
+		$text .= '<p>' . esc_html(
+			sprintf(
+				/* translators: %d: number of days entries are kept. */
+				_n( 'Entries are deleted automatically after %d day.', 'Entries are deleted automatically after %d days.', $days, 'blt-activity-log' ),
+				$days
+			)
+		) . '</p>';
 
 		wp_add_privacy_policy_content( 'BLT Activity Log', wp_kses_post( $text ) );
 	}

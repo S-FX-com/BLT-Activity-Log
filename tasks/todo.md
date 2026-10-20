@@ -12,7 +12,7 @@ Legend: `[x]` done and verified; `[ ]` open. Where a check could not be made in 
 - [x] `release.yml` ported from BLT Secure, `.distignore`, `phpcs.xml.dist`, `phpunit.xml.dist`, `ci.yml`, `check-version-sync.sh`, `build-zip.sh`, `verify-zip.sh`.
 - [x] Section 12 item 1 resolved: the family layer accepts a relative `menu` URL, so the Tools submenu needs no shared-layer change.
 - [x] Version-sync check and local zip build pass (one top-level `blt-activity-log/` folder, update checker inside, dev files out).
-- [ ] CI publishes the first release. Note: CI bumps the patch on the first merge, so the first published version is **0.1.1**, not 0.1.0. To publish 0.1.0 exactly, set the version to 0.0.0 and put `#minor` in the merge commit. Decision owed.
+- [ ] CI publishes the first release as **1.0.0** (decided). The repo version stays 0.1.0 and CI bumps it: put `#major` in the merge commit message or PR title (a squash merge counts the title), or run the Release workflow by hand with bump = major. The last commit on this branch carries `#major` in its subject.
 
 ## Phase 1: Core
 - [x] Install (table by `dbDelta`, `maybe_upgrade` on `init`, capability, cron, network-activation refusal, `system:logging_started`), Settings, Context, Logger, Coalescer, Diff, Redactor, Ip, the `blt_activity_log_record` action.
@@ -61,6 +61,8 @@ Legend: `[x]` done and verified; `[ ]` open. Where a check could not be made in 
 ## Phase 6: Lifecycle and docs
 - [x] Pruner: expired rows go in time-boxed batches; a pass that runs out of time schedules a continuation with its arguments; bad continuation arguments delete nothing; retention 0 keeps everything; an overdue prune is requested by opening the log, never done in the page request.
 - [x] 100,000 expired rows prune in one cron pass (about one second on SQLite). Owed: the same on MySQL on a shared host.
+- [x] Retention is adjustable per site from 1 to 365 days (90 default). There is no "keep forever": 0 and text are refused and the value stays; above 365 is saved as 365; a stored or configured 0 reads as 90.
+- [x] **Download a full dump** on the Retention card (and in the clear preview): every entry, unfiltered, no row cap, every column including full details, streamed in batches. Round-trips cell for cell against the table (quotes, commas, newlines, unicode, formula cells), is logged as `system:exported` scope `full dump`, and is refused with a bad nonce, for a visitor, and for a viewer without `manage_options`.
 - [x] Privacy: exporter pages in batches of 100; eraser blanks IP and browser, keeps the entries, leaves other people's alone; an unknown email is a clean no-op.
 - [x] Default uninstall leaves everything; uninstall with the toggle on removes the table, the four options, the capability, each person's per-page setting and every cron event, and leaves `blt_family_shared` and `blt_family_opt_in` untouched; a plugin left active after that rebuilds its table instead of failing.
 - [x] `README.md`, `readme.txt`, `HOOKS.md`, `CHANGELOG.md`, `AGENTS.md`, `languages/blt-activity-log.pot`.
@@ -71,7 +73,5 @@ Legend: `[x]` done and verified; `[ ]` open. Where a check could not be made in 
 - [ ] CONVENTIONS 14.5 checklist complete; release published by CI.
 
 ## Open decisions (also in CLAUDE.md section 12)
-- [ ] First release number (see Phase 0).
 - [ ] Add BLT Activity Log to the family list in `DESIGN.md` and port that change to every repo in the same pass (CONVENTIONS 16.1 step 7). `DESIGN.md` is vendored, so it is not edited here alone.
-- [ ] Confirm the defaults for client sites: retention 90 days, IP stored in full.
 - [ ] Emit `blt_activity_log_record` from BLT Optimized and BLT Secure, after this ships.

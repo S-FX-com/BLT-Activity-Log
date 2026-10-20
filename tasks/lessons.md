@@ -41,3 +41,14 @@ Gotchas found while building. Append only; never rewrite history. Newest at the 
 - **A long category label wraps inside its pill.** Give the pill `white-space: nowrap` and put the action label on its own line.
 - **List table markup:** rows have no id; pagination uses single-quoted attributes. Match with a regular expression that allows both quote styles.
 - **Rendering synthetic rows hides bugs.** Build test entries from real events (create the post, update it, delete it) and open every one on the detail screen.
+
+## Second review round (retention cap, dump)
+
+- **`wpdb::get_results()` returns an empty array when the query fails, not `null`.** `query()` flushes the result first, so a failed query leaves `last_result` empty. A streaming loop that stops on "no rows" cannot tell the end of the data from a timeout; check `$wpdb->last_error` after the call (`Query::export_batch()` now returns `null` on error and the file gets an `ERROR` line saying it is incomplete). My first attempt tested `is_array()` alone and would never have fired; the failure had to be forced with a `query` filter to find out.
+- **Log a download before it starts, not after it finishes.** A cancelled or failed download never reaches the code after the loop, so an export that handed over data would leave no record. The entry is written first and the file is bounded to the newest id as of that moment, so it is one consistent snapshot and does not contain its own log entry.
+- **A dump reads every column, including `details` (up to 64 KB per entry).** Use a smaller batch than the export (250 against 1,000) so a run of large entries cannot exhaust memory.
+- **A form value that means nothing must not be turned into something.** `absint()` turned a typed `-7` into 7 days of retention, and 0 or text was silently ignored while the screen said "saved". Non-numeric, zero and negative values are refused, over-365 is capped, and the notice says what retention actually is.
+- **There is no "keep forever".** Retention is 1 to 365; 0 in storage or in the wp-config constant reads as the 90-day default, so a bad value can never mean "delete everything older than a day" or "never delete".
+- **User meta is network-wide.** The per-page screen option is plain user meta, so `uninstall.php` skips deleting it on multisite rather than wiping other sites' setting.
+- **Spreadsheet escaping changes the data.** Prefixing a cell that starts with `= + - @` with an apostrophe is right for a file people open in a spreadsheet, but it means the file is not byte-faithful. The Settings card says so.
+- **Test tooling:** a CSV parsed with `fgetcsv()` needs the escape argument set to `''` to match `fputcsv( ..., escape: '' )`; the harness prints blank lines after the response body, which parse as one-cell rows; PDO returns integer columns as PHP ints.
