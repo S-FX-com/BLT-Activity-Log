@@ -461,4 +461,28 @@ class Test_Diff extends TestCase {
 		$this->assertFalse( BLT_Activity_Log_Diff::is_list( array( 1 => 'a' ) ) );
 		$this->assertFalse( BLT_Activity_Log_Diff::is_list( array( 'k' => 'a' ) ) );
 	}
+
+	/**
+	 * Lists and deep values compare as strings too, as scalars do: `[1, 2]` and `['1', '2']` are the same list.
+	 *
+	 * @return void
+	 */
+	public function test_lists_compare_as_strings() {
+		$this->assertSame( array(), BLT_Activity_Log_Diff::values( 'opt', array( 1, 2 ), array( '1', '2' ) ) );
+		$this->assertSame( array(), BLT_Activity_Log_Diff::values( 'opt', array( 'a' => array( 'b' => array( 'c' => array( 1 ) ) ) ), array( 'a' => array( 'b' => array( 'c' => array( '1' ) ) ) ) ) );
+		$this->assertTrue( BLT_Activity_Log_Diff::equal( array( 1, true, null ), array( '1', '1', '' ) ) );
+		$this->assertFalse( BLT_Activity_Log_Diff::equal( array( 1, 2 ), array( 1, 3 ) ) );
+		$this->assertNotSame( array(), BLT_Activity_Log_Diff::values( 'opt', array( 1, 2 ), array( 2, 3 ) ) );
+
+		// A reorder of the same members is still "order changed", whatever their types.
+		$this->assertSame(
+			array(
+				array(
+					'field'         => 'opt',
+					'order_changed' => true,
+				),
+			),
+			BLT_Activity_Log_Diff::values( 'opt', array( 1, 2, 3 ), array( '3', '1', '2' ) )
+		);
+	}
 }

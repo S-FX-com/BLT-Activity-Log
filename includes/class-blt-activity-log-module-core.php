@@ -83,6 +83,6 @@ class BLT_Activity_Log_Module_Core extends BLT_Activity_Log_Module_Base {
 			)
 		);
 
-		BLT_Activity_Log_Snapshot::refresh( array( 'core' => $new_version ) );
+		BLT_Activity_Log_Snapshot::refresh_keys( array(), array(), array( 'core' => $new_version ), true );
 	}
 }

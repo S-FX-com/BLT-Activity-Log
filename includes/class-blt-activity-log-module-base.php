@@ -43,16 +43,24 @@ abstract class BLT_Activity_Log_Module_Base implements BLT_Activity_Log_Module {
 	}
 
 	/**
-	 * Whether the current request is a front-end page view.
+	 * Whether the current request is a visitor's, not an editor's.
 	 *
-	 * Front-end requests do not edit content. A visit that bumps a view counter
-	 * in post meta, or a voting widget that touches terms, is not an edit, and
-	 * logging it would turn the log into a page-view recorder.
+	 * A page view does not edit content, nor does an anonymous AJAX or REST
+	 * call (a view counter, a voting widget). A visit that bumps a counter in
+	 * post meta, or touches terms, is not an edit, and logging it would turn the
+	 * log into a page-view recorder. Cron, WP-CLI and signed-in requests are not
+	 * visitors': an import or a script changes content for real.
 	 *
 	 * @return bool
 	 */
 	protected function is_front_request() {
-		return 'front' === BLT_Activity_Log_Context::request_context();
+		$context = BLT_Activity_Log_Context::request_context();
+
+		if ( 'front' === $context ) {
+			return true;
+		}
+
+		return in_array( $context, array( 'ajax', 'rest', 'xmlrpc' ), true ) && 0 === (int) get_current_user_id();
 	}
 
 	/**

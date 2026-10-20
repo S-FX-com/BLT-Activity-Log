@@ -90,6 +90,13 @@ class BLT_Activity_Log_Module_Terms extends BLT_Activity_Log_Module_Base {
 			return;
 		}
 
+		$after = get_object_vars( $term );
+
+		// A term with no parent has parent 0; that is "none", not a value that was set.
+		if ( empty( $after['parent'] ) ) {
+			$after['parent'] = '';
+		}
+
 		BLT_Activity_Log_Logger::record(
 			array(
 				'category'     => 'term',
@@ -98,7 +105,7 @@ class BLT_Activity_Log_Module_Terms extends BLT_Activity_Log_Module_Base {
 				'object_id'    => (int) $term_id,
 				'object_label' => (string) $term->name,
 				'details'      => array(
-					'changes' => BLT_Activity_Log_Diff::fields( array(), get_object_vars( $term ), array( 'name', 'slug', 'parent' ) ),
+					'changes' => BLT_Activity_Log_Diff::fields( array(), $after, array( 'name', 'slug', 'parent' ) ),
 				),
 			)
 		);
@@ -198,6 +205,14 @@ class BLT_Activity_Log_Module_Terms extends BLT_Activity_Log_Module_Base {
 	 */
 	private function term( $term_id, $taxonomy ) {
 		if ( in_array( $taxonomy, self::SKIPPED, true ) ) {
+			return null;
+		}
+
+		// Taxonomies with no screen of their own (a block theme's `wp_theme`, `wp_template_part_area`,
+		// `post_format`) are WordPress's bookkeeping, not something a person edited.
+		$object = get_taxonomy( (string) $taxonomy );
+
+		if ( ! $object || empty( $object->show_ui ) ) {
 			return null;
 		}
 

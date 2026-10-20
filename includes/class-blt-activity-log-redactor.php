@@ -24,7 +24,7 @@ class BLT_Activity_Log_Redactor {
 	 * `-` and brackets, so `mailserver_pass` and `cloudflare_token` hit while
 	 * `bypass_cache`, `passage` and `tokenizer` do not.
 	 */
-	const DEFAULT_PATTERN = '/(^|[_\-\[])(pass(word)?|pwd|secret|token|api[_-]?key|private[_-]?key|auth[_-]?key|license[_-]?key|salt|credentials?)($|[_\-\]])/i';
+	const DEFAULT_PATTERN = '/(^|[_\-\[])(passwords?|pass|pwd|secrets?|tokens?|api[_-]?keys?|(?:private|auth|license|nonce|logged[_-]?in|signing|encryption)[_-]?keys?|salts?|credentials?)($|[_\-\]])/i';
 
 	/**
 	 * Keys redacted regardless of the pattern.
@@ -108,11 +108,15 @@ class BLT_Activity_Log_Redactor {
 	 * @return bool
 	 */
 	public static function is_sensitive( $key ) {
-		$key = strtolower( trim( (string) $key ) );
+		$key = trim( (string) $key );
 
 		if ( '' === $key ) {
 			return false;
 		}
+
+		// accessToken, clientSecret, "Client Secret" and smtp.password read as access_token, client_secret,
+		// client_secret and smtp_password, which is what the pattern's word boundaries expect.
+		$key = strtolower( (string) preg_replace( array( '/(?<=[a-z0-9])(?=[A-Z])/', '/[\s.]+/' ), '_', $key ) );
 
 		if ( in_array( $key, self::ALWAYS, true ) ) {
 			return true;
@@ -277,12 +281,11 @@ class BLT_Activity_Log_Redactor {
 				}
 			}
 
-			// Keep a truncation record that an earlier pass already made.
+			// Keep a truncation record that an earlier pass already made, and the larger length when both
+			// passes cut the value: the first one knows how long it really was.
 			if ( isset( $change['truncated'] ) && is_array( $change['truncated'] ) ) {
 				foreach ( $change['truncated'] as $side => $length ) {
-					if ( ! isset( $item['truncated'][ $side ] ) ) {
-						$item['truncated'][ $side ] = (int) $length;
-					}
+					$item['truncated'][ $side ] = isset( $item['truncated'][ $side ] ) ? max( (int) $item['truncated'][ $side ], (int) $length ) : (int) $length;
 				}
 			}
 

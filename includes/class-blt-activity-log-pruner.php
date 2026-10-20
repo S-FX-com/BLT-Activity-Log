@@ -116,8 +116,12 @@ class BLT_Activity_Log_Pruner {
 				)
 			);
 
-			if ( $result['more'] ) {
-				self::schedule_continue( 'cutoff', $cutoff );
+			if ( $result['error'] ) {
+				BLT_Activity_Log_Logger::report( new RuntimeException( 'prune stopped after ' . $result['deleted'] . ' entries: database error' ) );
+			}
+
+			if ( $result['more'] && ! $result['error'] ) {
+				self::schedule_continue( 'retention', $cutoff );
 			}
 		} catch ( \Throwable $e ) {
 			BLT_Activity_Log_Logger::report( $e );
@@ -127,18 +131,33 @@ class BLT_Activity_Log_Pruner {
 	/**
 	 * Cron: carry on a prune or a clear that ran out of time.
 	 *
-	 * @param string          $mode  `cutoff` (delete entries older than the value) or
+	 * @param string          $mode  `retention` (the daily prune: delete what is older than the retention
+	 *                               setting as it is now), `cutoff` (delete entries older than the value) or
 	 *                               `max_id` (delete entries up to that id).
-	 * @param string|int|null $value The cutoff time, or the highest id.
+	 * @param string|int|null $value The cutoff time, or the highest id. Ignored for `retention`.
 	 * @return void
 	 */
 	public static function continue_run( $mode = 'cutoff', $value = '' ) {
 		try {
-			if ( ! in_array( $mode, array( 'cutoff', 'max_id' ), true ) || '' === (string) $value ) {
+			if ( ! in_array( $mode, array( 'retention', 'cutoff', 'max_id' ), true ) || '' === (string) $value ) {
 				return;
 			}
 
-			$result = self::delete( (string) $mode, $value, self::budget() );
+			if ( 'retention' === $mode ) {
+				// The setting may have changed since this was scheduled (raised, say, to keep more): follow it,
+				// not the cutoff of the day the prune started.
+				$value = self::cutoff( BLT_Activity_Log_Settings::retention_days() );
+
+				if ( null === $value ) {
+					return;
+				}
+
+				$delete_mode = 'cutoff';
+			} else {
+				$delete_mode = (string) $mode;
+			}
+
+			$result = self::delete( $delete_mode, $value, self::budget() );
 			$state  = BLT_Activity_Log_Settings::state();
 
 			BLT_Activity_Log_Settings::update_state(
@@ -148,7 +167,11 @@ class BLT_Activity_Log_Pruner {
 				)
 			);
 
-			if ( $result['more'] ) {
+			if ( $result['error'] ) {
+				BLT_Activity_Log_Logger::report( new RuntimeException( 'prune stopped after ' . $result['deleted'] . ' entries: database error' ) );
+			}
+
+			if ( $result['more'] && ! $result['error'] ) {
 				self::schedule_continue( (string) $mode, $value );
 			}
 		} catch ( \Throwable $e ) {
@@ -162,7 +185,9 @@ class BLT_Activity_Log_Pruner {
 	 * @param string          $mode   `cutoff` or `max_id`.
 	 * @param string|int      $value  The cutoff time, or the highest id.
 	 * @param float           $budget Seconds this pass may take.
-	 * @return array{deleted:int,more:bool} Rows removed, and whether rows may remain.
+	 * @return array{deleted:int,more:bool,error:bool} Rows removed, whether rows may remain, and whether
+	 *                                                  the database reported an error (a failed delete is
+	 *                                                  not "nothing left").
 	 */
 	public static function delete( $mode, $value, $budget ) {
 		global $wpdb;
@@ -171,6 +196,7 @@ class BLT_Activity_Log_Pruner {
 		$start   = microtime( true );
 		$deleted = 0;
 		$more    = false;
+		$error   = false;
 
 		do {
 			if ( 'max_id' === $mode ) {
@@ -182,6 +208,9 @@ class BLT_Activity_Log_Pruner {
 			}
 
 			if ( false === $rows ) {
+				$error = true;
+				$more  = false;
+
 				break;
 			}
 
@@ -192,6 +221,7 @@ class BLT_Activity_Log_Pruner {
 		return array(
 			'deleted' => $deleted,
 			'more'    => $more,
+			'error'   => $error,
 		);
 	}
 
@@ -215,14 +245,17 @@ class BLT_Activity_Log_Pruner {
 	public static function maybe_request_overdue() {
 		$state = BLT_Activity_Log_Settings::state();
 
-		if ( ! self::is_overdue( (int) $state['last_prune_at'], (string) $state['started_at'] ) ) {
+		// A request made recently counts, so reopening the screen does not queue another. It is kept apart
+		// from `last_prune_at`, which says when a prune really ran.
+		$last = max( (int) $state['last_prune_at'], (int) $state['prune_requested_at'] );
+
+		if ( ! self::is_overdue( $last, (string) $state['started_at'] ) ) {
 			return;
 		}
 
 		wp_schedule_single_event( time(), BLT_Activity_Log_Install::CRON_PRUNE );
 
-		// Stamp the state so reopening the screen does not queue another.
-		BLT_Activity_Log_Settings::update_state( array( 'last_prune_at' => time() ) );
+		BLT_Activity_Log_Settings::update_state( array( 'prune_requested_at' => time() ) );
 
 		spawn_cron();
 	}

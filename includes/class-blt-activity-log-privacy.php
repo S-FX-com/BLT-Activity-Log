@@ -51,12 +51,14 @@ class BLT_Activity_Log_Privacy {
 		$text .= '<p class="privacy-policy-tutorial">' . esc_html__( 'This text suggests what to tell visitors and users about the activity log kept by BLT Activity Log. Review it and edit it to match how you use the log.', 'blt-activity-log' ) . '</p>';
 		$text .= '<p>' . esc_html__( 'We keep a record of changes made to this site: content, plugins, themes, settings and user accounts, and when people sign in. Each record notes who made the change, when, and from which screen.', 'blt-activity-log' ) . '</p>';
 
+		$browser = (bool) BLT_Activity_Log_Settings::get( 'store_user_agent', true );
+
 		if ( 'off' === $mode ) {
-			$text .= '<p>' . esc_html__( 'The record does not include IP addresses.', 'blt-activity-log' ) . '</p>';
+			$text .= '<p>' . esc_html( $browser ? __( 'The record does not include IP addresses. It does include the browser used.', 'blt-activity-log' ) : __( 'The record does not include IP addresses or the browser used.', 'blt-activity-log' ) ) . '</p>';
 		} elseif ( 'anonymized' === $mode ) {
-			$text .= '<p>' . esc_html__( 'The record includes IP addresses with their last part removed, and the browser used.', 'blt-activity-log' ) . '</p>';
+			$text .= '<p>' . esc_html( $browser ? __( 'The record includes IP addresses with their last part removed, and the browser used.', 'blt-activity-log' ) : __( 'The record includes IP addresses with their last part removed. It does not include the browser used.', 'blt-activity-log' ) ) . '</p>';
 		} else {
-			$text .= '<p>' . esc_html__( 'The record includes the IP address and the browser used.', 'blt-activity-log' ) . '</p>';
+			$text .= '<p>' . esc_html( $browser ? __( 'The record includes the IP address and the browser used.', 'blt-activity-log' ) : __( 'The record includes the IP address. It does not include the browser used.', 'blt-activity-log' ) ) . '</p>';
 		}
 
 		$text .= '<p>' . esc_html(

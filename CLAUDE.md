@@ -118,7 +118,7 @@ Views live in `admin/views/` (`log.php`, `entry.php`, `settings.php`).
 2. **No work on requests that change nothing.** Listeners only run when their hook fires. No queries at boot (settings and db_version are autoloaded). Acceptance check: a front-end page view runs zero queries from this plugin.
 3. **Buffer, then write once.** Entries are buffered during the request and written on `shutdown` in one multi-row `INSERT`. `shutdown` also fires after `exit` and fatal errors.
 4. **Merge within a request.** Buffered entries are keyed by `(category, action, object_type, object_id|object_key)`. A post save that also fires meta and term hooks produces one entry, not five.
-5. **Coalesce across requests.** The block editor saves a post, then saves legacy meta boxes in a second request; Bricks saves via AJAX. Before inserting an `updated` entry for a post, option or user, look up the newest entry for the same user, object and action whose `last_at` is within the coalesce window (default 60 s, filter `blt_activity_log_coalesce_window`). If found, merge into it (`UPDATE`), keep the earliest "before" and latest "after" per field, drop fields that ended up unchanged, bump `occurrences` and `last_at`. An `updated` within the window after a `created` by the same user merges into the `created` entry.
+5. **Coalesce across requests.** The block editor saves a post, then saves legacy meta boxes in a second request; Bricks saves via AJAX. Before inserting an `updated` entry for a post, option or user, look up the newest entry for the same user, object and action whose `last_at` is within the coalesce window (default 60 s, filter `blt_activity_log_coalesce_window`). If found, merge into it (`UPDATE`), keep the earliest "before" and latest "after" per field, drop fields that ended up unchanged, bump `occurrences` and `last_at`. The `UPDATE` names the `occurrences` and `last_at` it read, so two requests merging into one row cannot overwrite each other: the loser re-reads the winner's row and merges on top (three tries), and a save that keeps losing is written as its own row rather than lost. Merging is by chain, not by arrival order: a later change that ends where an earlier one began came first (WordPress fires the hook for a nested save before the outer one), and an identical content event counts once (the Site Editor's REST controllers fire it twice). An `updated` within the window after a `created` by the same user merges into the `created` entry.
 6. **An empty diff is not an entry.** If a save changed no tracked field, nothing is logged. (Plugins call `wp_update_post()` for many reasons.)
 7. **Snapshot labels, render text later.** Store the object's title or name and the actor's login and role as they were at the time, because they may be renamed or deleted. Do **not** store summary sentences; the Formatter builds them at render time so they translate.
 8. **Redact by key, never by guesswork.** Any option name, meta key or array key matching the redaction pattern (section 10) is recorded as changed with the value replaced by `[redacted]`. Always redacted regardless of the pattern: `user_pass`, `user_activation_key`, `session_tokens`, application password values, `post_password`.
@@ -180,7 +180,8 @@ Store field **keys**, not labels; the Formatter maps keys to translated labels.
     "chars": [1240, 1388],
     "blocks_added": { "core/paragraph": 2, "core/image": 1 },
     "blocks_removed": { "core/heading": 1 },
-    "revision_id": 4567
+    "revision_id": 4567,
+    "hashes": ["3f2a9c1e", "b81d07aa"]
   },
   "bricks": { "elements_added": { "section": 1, "heading": 2 }, "elements_removed": {} },
   "terms": { "category": { "added": ["News"], "removed": ["Uncategorized"] } },
@@ -191,7 +192,7 @@ Store field **keys**, not labels; the Formatter maps keys to translated labels.
 }
 ```
 
-Only the keys that apply are present. Also possible: `changes[].order_changed` and `changes[].edited` (flags that replace before and after), `changes_omitted` (how many changes were cut to keep the entry under the cap), `network_wide`, and `external_category` (the name an outside caller used for a category that was filed under Other). `BLT_Activity_Log_Formatter::details()` normalizes whatever is stored into this shape, so a screen never has to guard against another plugin's idea of it.
+`content.hashes` is a short fingerprint of the content before and after, so a save that returns the content to what it was is recognized exactly (character count alone cannot tell "Monday" to "Friday" to "Sunday" from a revert). An entry without hashes is never dropped on a guess. Only the keys that apply are present. Also possible: `changes[].order_changed` and `changes[].edited` (flags that replace before and after), `changes_omitted` (how many changes were cut to keep the entry under the cap), `network_wide`, and `external_category` (the name an outside caller used for a category that was filed under Other). `BLT_Activity_Log_Formatter::details()` normalizes whatever is stored into this shape, so a screen never has to guard against another plugin's idea of it.
 
 ### 5.3 Settings defaults (`blt_activity_log_settings`)
 
@@ -230,7 +231,7 @@ Only the keys that apply are present. Also possible: `changes[].order_changed` a
 
 ### 6.2 Posts and pages (`post`)
 
-**Post types covered:** every type with `show_ui`, plus `wp_template`, `wp_template_part`, `wp_global_styles`, `wp_block`, `wp_navigation` and `bricks_template`. **Excluded:** `attachment` (Media module), `nav_menu_item` (Appearance), `revision`, `customize_changeset`, `oembed_cache`, `user_request`, plus `excluded_post_types`. Filter: `blt_activity_log_post_types`. Autosaves (`DOING_AUTOSAVE`, `wp_is_post_autosave()`) and `auto-draft` saves are never logged.
+**Post types covered:** every type with `show_ui`, plus `wp_template`, `wp_template_part`, `wp_global_styles`, `wp_block`, `wp_navigation` and `bricks_template`. **Excluded:** `attachment` (Media module), `nav_menu_item` (Appearance), `revision`, `customize_changeset`, `oembed_cache`, `user_request`, WooCommerce orders (`shop_order`, `shop_order_placehold`, `shop_order_refund`) and ACF definitions (`acf-field-group`, `acf-field`, `acf-post-type`, `acf-taxonomy`, `acf-ui-options-page`), both non-goals in section 11, plus `excluded_post_types`. A site that wants orders or ACF back adds the slugs with `blt_activity_log_post_types`. Filter: `blt_activity_log_post_types`. Autosaves (`DOING_AUTOSAVE`, `wp_is_post_autosave()`) and `auto-draft` saves are never logged.
 
 | Action | Source | Captured |
 | --- | --- | --- |
@@ -261,11 +262,13 @@ Status changes come **only** from `wp_after_insert_post`. Do not also hook `tras
 | `media` | `uploaded` | `add_attachment` | Filename, MIME type, file size |
 | `media` | `updated` | `edit_attachment` | Title, alt text, caption, description diffs |
 | `media` | `deleted` | `delete_attachment` (before removal) | Filename, title |
-| `term` | `created`, `updated`, `deleted` | `created_term`; `edit_terms` (before) + `edited_term`; `pre_delete_term` | Name, slug, parent, description diffs. Skip the `nav_menu` taxonomy. |
+| `term` | `created`, `updated`, `deleted` | `created_term`; `edit_terms` (before) + `edited_term`; `pre_delete_term` | Name, slug, parent, description diffs. Skip the `nav_menu` taxonomy and any taxonomy with no screen of its own (`show_ui` false: a block theme's `wp_theme` and `wp_template_part_area`). |
 | `appearance` | `menu_created`, `menu_updated`, `menu_deleted` | `wp_create_nav_menu`, `wp_update_nav_menu`, `wp_delete_nav_menu` | Menu name, item count before and after |
 | `appearance` | `menu_locations_changed` | `theme_mods_{stylesheet}` diff on `nav_menu_locations` | Location: old menu to new menu |
 | `appearance` | `widgets_changed` | `sidebars_widgets` option diff | Sidebar: widgets added and removed |
 | `appearance` | `customizer_published` | `theme_mods_{stylesheet}` key diff, `via = customizer` when `customize_save` has run | Changed theme mods. Core options changed in the Customizer (site title, etc.) are logged by the Settings module with `via = customizer`. |
+
+**Known limitation.** `wp_update_nav_menu` fires when the menu itself is saved. WordPress's Customizer and REST menu-item endpoints can change items without that action, so an edit that touches only menu items there may not produce a `menu_updated` entry. Edits on the Appearance > Menus screen are logged, with the item count before and after.
 
 ### 6.4 Settings (`setting`)
 
@@ -275,7 +278,7 @@ Sources: `updated_option` (old and new value), `added_option`, and `delete_optio
 
 **Scope `all`.** Log any option changed during a request with a signed-in user (`user_id > 0`), minus the ignore list. Changes from cron, background jobs and anonymous requests are not logged in this mode. Options updated before `init` are ignored.
 
-**Always ignored (both scopes):** `_transient_*`, `_site_transient_*`, `cron`, `rewrite_rules`, `active_plugins` and `recently_activated` (the Plugins module covers them), `uninstall_plugins`, `*.lock` and `*_lock`, `db_upgraded`, `recovery_keys`, `can_compress_scripts`, `blt_activity_log_snapshot`, `blt_activity_log_state`. Also ignored, because another module already covers them or WordPress writes them as bookkeeping: `sidebars_widgets`, `theme_mods_*`, `auto_update_plugins`, `auto_update_themes`, `external_updates-*`, the theme-switch options (`template`, `stylesheet`, `current_theme`, `theme_switched`, `theme_switch_menu_locations`), `*_children`, `wp_calendar_block_has_published_posts`, `db_version`, `fresh_site`, `finished_*`, `recently_edited`, `*user_roles` and `adminhash`. Filter: `blt_activity_log_ignored_options` (exact names and `*` wildcards).
+**Always ignored (both scopes):** `_transient_*`, `_site_transient_*`, `cron`, `rewrite_rules`, `active_plugins` and `recently_activated` (the Plugins module covers them), `uninstall_plugins`, `*.lock` and `*_lock`, `db_upgraded`, `recovery_keys`, `can_compress_scripts`, `blt_activity_log_snapshot`, `blt_activity_log_state`. Also ignored, because another module already covers them or WordPress writes them as bookkeeping: `sidebars_widgets`, `theme_mods_*`, `auto_update_plugins`, `auto_update_themes`, `external_updates-*`, the theme-switch options (`template`, `stylesheet`, `current_theme`, `theme_switched`, `theme_switch_menu_locations`), `*_children`, `wp_calendar_block_has_published_posts`, `db_version`, `fresh_site`, `finished_*`, `recently_edited`, `*user_roles` and `adminhash`. Never logged, because they are secrets or this plugin's own bookkeeping: `blt_activity_log_db_version` and the keys and salts WordPress generates and stores as options when `wp-config.php` does not define them (`auth_key`, `secure_auth_key`, `logged_in_key`, `nonce_key` and the four `*_salt`). Filter: `blt_activity_log_ignored_options` (exact names and `*` wildcards).
 
 **Value diffs.** Scalars are compared as strings, so `1` and `'1'` are equal. Arrays are compared by key path to depth 3 and recorded as `option[key][subkey]`; a list whose members are unchanged but reordered is recorded as "order changed". Redaction applies at every key level.
 
@@ -317,6 +320,11 @@ Failed sign-ins are off by default because a brute-force run would flood the tab
 ### 6.7 Out-of-band changes (snapshot)
 
 `blt_activity_log_snapshot` holds `{ core, plugins: { file: version }, themes: { stylesheet: version } }`. It is refreshed after every logged plugin, theme or core change and compared once a day by `blt_activity_log_snapshot` cron. Any difference that no logged event explains becomes a `changed_externally` entry (user 0, context `cron`). This is how Composer deploys on Bedrock, FTP uploads and `DISALLOW_FILE_MODS` sites still show version history. The snapshot uses `get_plugins()`, so it runs only in cron, on activation and after upgrades, never on page load.
+
+- **Refresh only what a logged change touched.** After a logged update, install or delete, only that plugin, theme or core version moves in the stored snapshot (`BLT_Activity_Log_Snapshot::refresh_keys()`), so an unrelated out-of-band change made earlier is still reported at the next daily run instead of being absorbed.
+- **Read the disk, not a cache.** `get_plugins()` and `wp_get_themes()` cache without expiry, and a persistent object cache keeps the list from before an FTP or Composer deploy. The plugin and theme caches are cleared before the daily comparison and after a delete.
+- **A failed update is not an update.** `upgrader_process_complete` also fires for an update that failed, was skipped, or never ran in a bulk update. An item is logged only when the version on disk moved; an upload that replaces a plugin with the same version is not an update.
+- **A switched-off category stays quiet.** The daily run records `changed_externally` only for categories whose module is enabled, and still moves the stored baseline.
 
 ### 6.8 System entries (`system`)
 
@@ -365,6 +373,7 @@ Compose everything from the `.blt-ui` catalog in `DESIGN.md` section 2 and meet 
 | User | `<select name="user">`: "Anyone", "No user (system, cron, WP-CLI)", then each user seen in the log as "Display name (login)". Deleted users appear by login snapshot with "(deleted)". | Built from `SELECT DISTINCT user_id, user_login`. Above 200 distinct users, becomes a text field matching login. |
 | Date | `<input type="date" name="from">` and `name="to"`, plus preset links: Today, Yesterday, Last 7 days, Last 30 days | Dates are site-local; `to` is inclusive to the end of that day; converted to a UTC range in `BLT_Activity_Log_Query` (DST-safe) |
 | Search | `name="s"` | `object_label LIKE` via `$wpdb->esc_like()` |
+| Item | `name="item"` (hidden; set by "All activity for this item") | One exact object: `type\|id:N` for numeric objects, `type\|key:...` for plugins, themes and options. Not a label search, so it never matches another item whose title contains the same text. |
 
 Also: a **Filter** button, a **Reset** link, a line stating how many entries match, and **Export CSV** for `manage_options`.
 
@@ -392,7 +401,7 @@ Opened from the Item column. Back link returns to the log with the same filters 
 3. **What changed** card: a `Field / Before / After` table. Redacted values show a `hidden` badge. Truncated values show "(truncated, 4,210 characters)".
 4. **Content** card, for post updates: character counts, blocks added and removed, Bricks elements added and removed, and a **Compare revisions** button to `revision.php?revision={revision_id}` when that revision exists and the viewer can read it. Otherwise: "Revisions are disabled on this site, so only a summary is available."
 5. **Terms** and **Versions** cards where present.
-6. **Links:** Edit {item} (if it still exists and the viewer can edit it, otherwise the label with "(deleted)"), "All activity for this item", "All activity by this user".
+6. **Links:** Edit {item} (if it still exists and the viewer can edit it, otherwise the label with "(deleted)"), "All activity for this item" (the exact `item` filter in 7.2), "All activity by this user".
 7. **Raw record** (`manage_options` only): the `details` JSON in `.blt-code-block` inside a native `<details>` element.
 
 ### 7.4 Settings tab (`manage_options`, PRG on `admin_init`)
@@ -405,7 +414,7 @@ Opened from the Item column. Back link returns to the log with the same filters 
 | Retention | Days, 1 to 365. Locked with an explanation when `BLT_ACTIVITY_LOG_RETENTION_DAYS` is defined. Stat tiles: total entries, oldest entry, last prune. **Download a full dump** (section 7.6). |
 | Updates | **Check for Updates** (CONVENTIONS 9.1) |
 | Advanced | "Delete all plugin data on uninstall" toggle |
-| Clear log | Danger card. Choose "all entries" or "older than {date}". The first submit is a preview showing the exact count; a second POST with a confirm checkbox and nonce deletes. Writes `system:log_cleared` afterwards, so a cleared log is never silently empty. |
+| Clear log | Danger card. Choose "all entries" or "older than {date}". The first submit is a preview showing the exact count and carrying the newest entry id it counted (`clear_max_id`); a second POST with a confirm checkbox and nonce deletes, and only up to that id, so entries written between the preview and the confirm are kept and the count shown is the count removed. A confirm with no preview deletes nothing. "Older than {date}" accepts a date that has already started, because a later one would take the `log_cleared` record and everything after it. Writes `system:log_cleared` afterwards, so a cleared log is never silently empty. |
 
 Save bar at the bottom. Saving writes a `setting:updated` entry for `blt_activity_log_settings` (rule 4.3.11).
 
@@ -469,7 +478,7 @@ Follow CONVENTIONS 14. Pure classes get known-vector PHPUnit tests with no WordP
 
 | Class | Vectors |
 | --- | --- |
-| `BLT_Activity_Log_Redactor` | Default pattern `/(^|[_\-\[])(pass(word)?|pwd|secret|token|api[_-]?key|private[_-]?key|auth[_-]?key|license[_-]?key|salt|credentials?)($|[_\-\]])/i`. Must hit: `mailserver_pass`, `user_pass`, `api_key`, `stripe_secret_key`, `blt_secure_settings[cloudflare_token]`, `nonce_salt`. Must miss: `keyboard_shortcuts`, `bypass_cache`, `passage`, `posts_per_page`, `tokenizer`. Truncation records original length. |
+| `BLT_Activity_Log_Redactor` | Default pattern `/(^|[_\-\[])(passwords?|pass|pwd|secrets?|tokens?|api[_-]?keys?|(?:private|auth|license|nonce|logged[_-]?in|signing|encryption)[_-]?keys?|salts?|credentials?)($|[_\-\]])/i`, applied to a normalized key (camelCase split at the capital, dots and spaces to `_`). Must hit: `mailserver_pass`, `user_pass`, `api_key`, `api_keys`, `stripe_secret_key`, `blt_secure_settings[cloudflare_token]`, `nonce_salt`, `nonce_key`, `logged_in_key`, `accessToken`, `clientSecret`, `smtp.password`, `Client Secret`, `passwords`. Must miss: `keyboard_shortcuts`, `bypass_cache`, `passage`, `posts_per_page`, `tokenizer`. Truncation records original length. |
 | `BLT_Activity_Log_Diff` | Scalars equal as strings (`1` vs `'1'`); nested key paths to depth 3; reordered list reports "order changed"; identical inputs give an empty diff; block histogram diff with nested blocks and whitespace-only freeform blocks ignored |
 | `BLT_Activity_Log_Status_Map` | Every `(before, after, is_update)` pair in section 6.2, including `auto-draft → publish` = `created`, `trash → draft` = `restored`, `publish → future` = `scheduled` |
 | `BLT_Activity_Log_Coalescer` | Earliest before and latest after kept; a field changed and changed back is dropped; `created` absorbs a following `updated` |

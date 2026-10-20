@@ -58,7 +58,7 @@ $blt_retention   = BLT_Activity_Log_Settings::retention_days();
 								<span class="blt-toggle-track" aria-hidden="true"><span class="blt-toggle-thumb"></span></span>
 								<span class="blt-toggle-text">
 									<span class="blt-toggle-label"><?php esc_html_e( 'Failed sign-ins', 'blt-activity-log' ); ?></span>
-									<span class="blt-toggle-desc"><?php esc_html_e( 'Off by default: a brute-force attack would flood the log. Locking people out is the job of a security plugin.', 'blt-activity-log' ); ?></span>
+									<span class="blt-toggle-desc"><?php esc_html_e( 'Off by default: a brute-force attack would flood the log. Locking people out is the job of a security plugin. The username is recorded as typed, and people sometimes type a password into that box.', 'blt-activity-log' ); ?></span>
 								</span>
 							</label>
 						<?php endif; ?>
@@ -258,6 +258,7 @@ $blt_retention   = BLT_Activity_Log_Settings::retention_days();
 				<?php if ( 'preview' === $clear['stage'] ) : ?>
 					<input type="hidden" name="clear_scope" value="<?php echo esc_attr( $clear['scope'] ); ?>" />
 					<input type="hidden" name="clear_before" value="<?php echo esc_attr( $clear['before'] ); ?>" />
+					<input type="hidden" name="clear_max_id" value="<?php echo esc_attr( (string) $clear['max_id'] ); ?>" />
 
 					<p class="blt-text-danger">
 						<?php

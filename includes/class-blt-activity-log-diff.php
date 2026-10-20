@@ -380,13 +380,31 @@ class BLT_Activity_Log_Diff {
 	}
 
 	/**
+	 * A structure with every scalar as the string it is compared as, so `[1, 2]` and `['1', '2']` are the same.
+	 *
+	 * @param mixed $value Any value.
+	 * @return mixed
+	 */
+	private static function comparable( $value ) {
+		if ( is_object( $value ) ) {
+			$value = get_object_vars( $value );
+		}
+
+		if ( is_array( $value ) ) {
+			return array_map( array( __CLASS__, 'comparable' ), $value );
+		}
+
+		return self::to_string( $value );
+	}
+
+	/**
 	 * Stable, unmasked encoding used only for equality.
 	 *
 	 * @param mixed $value Any value.
 	 * @return string
 	 */
 	private static function raw_encode( $value ) {
-		$json = json_encode( $value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PARTIAL_OUTPUT_ON_ERROR ); // phpcs:ignore WordPress.WP.AlternativeFunctions.json_encode_json_encode
+		$json = json_encode( self::comparable( $value ), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PARTIAL_OUTPUT_ON_ERROR ); // phpcs:ignore WordPress.WP.AlternativeFunctions.json_encode_json_encode
 
 		return is_string( $json ) ? $json : '';
 	}

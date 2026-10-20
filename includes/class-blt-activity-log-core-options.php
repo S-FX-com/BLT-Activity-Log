@@ -152,6 +152,17 @@ class BLT_Activity_Log_Core_Options {
 		// Role definitions (rewritten when a capability is granted) and the admin-email confirmation token.
 		'*user_roles',
 		'adminhash',
+		// This plugin's own schema bookkeeping, and the keys and salts WordPress generates (and stores as
+		// options) when wp-config.php does not define them. These are secrets: never logged, whatever the pattern.
+		'blt_activity_log_db_version',
+		'auth_key',
+		'secure_auth_key',
+		'logged_in_key',
+		'nonce_key',
+		'auth_salt',
+		'secure_auth_salt',
+		'logged_in_salt',
+		'nonce_salt',
 	);
 
 	/**

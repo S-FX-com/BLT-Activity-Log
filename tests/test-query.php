@@ -284,4 +284,107 @@ class Test_Query extends TestCase {
 		$this->assertSame( 'when', $defaults['orderby'] );
 		$this->assertSame( 'desc', $defaults['order'] );
 	}
+
+	/**
+	 * The end of a day is the start of the next one, even where the clocks jump
+	 * at midnight and the next day (or this one) starts at 01:00.
+	 *
+	 * @return void
+	 */
+	public function test_end_of_day_is_the_start_of_the_next_day_where_dst_begins_at_midnight() {
+		$zones = array(
+			array( 'America/Havana', '2013-03-10' ),
+			array( 'Asia/Beirut', '2015-03-29' ),
+			array( 'America/Sao_Paulo', '2018-11-04' ),
+			array( 'Africa/Cairo', '2010-04-30' ),
+			array( 'America/Santiago', '2013-09-08' ),
+			array( 'America/New_York', '2026-03-08' ),
+			array( 'Asia/Kolkata', '2026-03-08' ),
+		);
+
+		foreach ( $zones as $case ) {
+			list( $zone, $day ) = $case;
+
+			$tz   = new DateTimeZone( $zone );
+			$next = ( new DateTimeImmutable( $day, new DateTimeZone( 'UTC' ) ) )->modify( '+1 day' )->format( 'Y-m-d' );
+
+			$this->assertSame(
+				BLT_Activity_Log_Query::utc_range( $next, '', $tz )['from'],
+				BLT_Activity_Log_Query::utc_range( '', $day, $tz )['to_exclusive'],
+				"$zone $day: the day ends where the next one starts."
+			);
+		}
+
+		// One worked value: Cuba's clocks jump 00:00 to 01:00 on 2013-03-10, so the next midnight is UTC-4.
+		$this->assertSame( '2013-03-11 04:00:00', BLT_Activity_Log_Query::utc_range( '', '2013-03-10', new DateTimeZone( 'America/Havana' ) )['to_exclusive'] );
+		// And the day that starts at 01:00 starts at 01:00 (05:00 UTC).
+		$this->assertSame( '2013-03-10 05:00:00', BLT_Activity_Log_Query::utc_range( '2013-03-10', '', new DateTimeZone( 'America/Havana' ) )['from'] );
+	}
+
+	/**
+	 * Hyphens survive in an activity key: the Logger keeps them (`sanitize_key`).
+	 *
+	 * @return void
+	 */
+	public function test_activity_keys_may_contain_hyphens() {
+		$this->assertSame( 'blt-secure:waf-rule-deployed', BLT_Activity_Log_Query::normalize_args( array( 'activity' => 'blt-secure:waf-rule-deployed' ) )['activity'] );
+		$this->assertSame( 'post', BLT_Activity_Log_Query::normalize_args( array( 'activity' => 'post' ) )['activity'] );
+		$this->assertSame( '', BLT_Activity_Log_Query::normalize_args( array( 'activity' => 'a b' ) )['activity'], 'Spaces are still refused.' );
+		$this->assertSame( '', BLT_Activity_Log_Query::normalize_args( array( 'activity' => "x' OR 1=1" ) )['activity'] );
+	}
+
+	/**
+	 * Long search text and logins are cut by characters, never through one.
+	 *
+	 * @return void
+	 */
+	public function test_long_multibyte_text_is_cut_on_a_character_boundary() {
+		$search = BLT_Activity_Log_Query::normalize_args( array( 's' => str_repeat( '日', 300 ) ) )['s'];
+
+		$this->assertTrue( mb_check_encoding( $search, 'UTF-8' ) );
+		$this->assertSame( 200, mb_strlen( $search ) );
+
+		$user = BLT_Activity_Log_Query::normalize_args( array( 'user' => str_repeat( 'é', 100 ) ) )['user'];
+
+		$this->assertTrue( mb_check_encoding( $user, 'UTF-8' ) );
+		$this->assertSame( 'login:' . str_repeat( 'é', 60 ), $user );
+	}
+
+	/**
+	 * A page number too big to multiply is held at a sane ceiling.
+	 *
+	 * @return void
+	 */
+	public function test_a_huge_page_number_is_capped() {
+		$this->assertSame( BLT_Activity_Log_Query::MAX_PAGED, BLT_Activity_Log_Query::normalize_args( array( 'paged' => '99999999999999999999' ) )['paged'] );
+		$this->assertSame( BLT_Activity_Log_Query::MAX_PAGED, BLT_Activity_Log_Query::normalize_args( array( 'paged' => PHP_INT_MAX ) )['paged'] );
+		$this->assertSame( 1, BLT_Activity_Log_Query::normalize_args( array( 'paged' => '-4' ) )['paged'] );
+
+		$offset = ( BLT_Activity_Log_Query::MAX_PAGED - 1 ) * BLT_Activity_Log_Query::MAX_PER_PAGE;
+
+		$this->assertIsInt( $offset, 'The largest offset stays an integer.' );
+	}
+
+	/**
+	 * One object: by id or by key, never by its label.
+	 *
+	 * @return void
+	 */
+	public function test_item_filter() {
+		$by_id = BLT_Activity_Log_Query::build_where( BLT_Activity_Log_Query::normalize_args( array( 'item' => 'post|id:42' ) ), new DateTimeZone( 'UTC' ) );
+
+		$this->assertSame( 'object_type = %s AND object_id = %d', $by_id['sql'] );
+		$this->assertSame( array( 'post', 42 ), $by_id['params'] );
+
+		$by_key = BLT_Activity_Log_Query::build_where( BLT_Activity_Log_Query::normalize_args( array( 'item' => 'plugin|key:akismet/akismet.php' ) ), new DateTimeZone( 'UTC' ) );
+
+		$this->assertSame( 'object_type = %s AND object_key = %s', $by_key['sql'] );
+		$this->assertSame( array( 'plugin', 'akismet/akismet.php' ), $by_key['params'] );
+
+		foreach ( array( 'post|id:abc', 'post|id:', '|id:4', 'post', 'post|bogus:4', 'Post Type|id:4', array( 'post|id:1' ), "post|id:1' OR '1'='1" ) as $bad ) {
+			$this->assertSame( '', BLT_Activity_Log_Query::normalize_args( array( 'item' => $bad ) )['item'], is_string( $bad ) ? $bad : 'array' );
+		}
+
+		$this->assertSame( 'post|id:7', BLT_Activity_Log_Query::normalize_args( array( 'item' => 'post|id:0007' ) )['item'], 'The id is normalized.' );
+	}
 }

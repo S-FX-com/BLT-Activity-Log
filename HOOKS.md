@@ -141,7 +141,7 @@ add_filter(
 
 ### `blt_activity_log_post_types`
 
-The post types that are logged: every type with a UI, plus `wp_template`, `wp_template_part`, `wp_global_styles`, `wp_block`, `wp_navigation` and `bricks_template`, minus attachments, nav menu items, revisions, `customize_changeset`, `oembed_cache`, `user_request` and the types skipped in Settings.
+The post types that are logged: every type with a UI, plus `wp_template`, `wp_template_part`, `wp_global_styles`, `wp_block`, `wp_navigation` and `bricks_template`, minus attachments, nav menu items, revisions, `customize_changeset`, `oembed_cache`, `user_request`, WooCommerce orders (`shop_order`, `shop_order_placehold`, `shop_order_refund`), ACF definitions (`acf-field-group`, `acf-field`, `acf-post-type`, `acf-taxonomy`, `acf-ui-options-page`) and the types skipped in Settings. Orders and ACF definitions are non-goals; add their slugs back here if a site wants them.
 
 | Argument | Type | Description |
 | --- | --- | --- |
@@ -170,15 +170,15 @@ Options that are never logged, in either scope. Exact names, or patterns with `*
 
 | Argument | Type | Default | Description |
 | --- | --- | --- | --- |
-| `$patterns` | string[] | Transients, `cron`, `rewrite_rules`, `active_plugins`, `recently_activated`, `uninstall_plugins`, locks, `db_upgraded`, `recovery_keys`, `can_compress_scripts`, this plugin's snapshot and state, options another module already covers (`sidebars_widgets`, `theme_mods_*`, the auto-update lists, `external_updates-*`, theme-switch bookkeeping), WordPress caches and upgrade flags, role definitions and `adminhash` | Patterns. |
+| `$patterns` | string[] | Transients, `cron`, `rewrite_rules`, `active_plugins`, `recently_activated`, `uninstall_plugins`, locks, `db_upgraded`, `recovery_keys`, `can_compress_scripts`, this plugin's own options (snapshot, state, schema version), options another module already covers (`sidebars_widgets`, `theme_mods_*`, the auto-update lists, `external_updates-*`, theme-switch bookkeeping), WordPress caches and upgrade flags, role definitions, `adminhash`, and the keys and salts WordPress generates when `wp-config.php` does not define them | Patterns. |
 
 ### `blt_activity_log_redact_pattern`
 
-The regular expression a key must match for its value to be hidden. A matching option name, meta key or array key is recorded as changed, with the value replaced by "hidden". Password hashes, session tokens, application password values and `post_password` are hidden whatever this returns.
+The regular expression a key must match for its value to be hidden. A matching option name, meta key or array key is recorded as changed, with the value replaced by "hidden". Keys are normalized before they are matched, so `accessToken`, `clientSecret`, `smtp.password` and `Client Secret` hit the same way as `access_token`. Password hashes, session tokens, application password values and `post_password` are hidden whatever this returns.
 
 | Argument | Type | Default | Description |
 | --- | --- | --- | --- |
-| `$pattern` | string | `/(^\|[_\-\[])(pass(word)?\|pwd\|secret\|token\|api[_-]?key\|private[_-]?key\|auth[_-]?key\|license[_-]?key\|salt\|credentials?)($\|[_\-\]])/i` | A PCRE pattern. An invalid one is ignored. |
+| `$pattern` | string | `/(^\|[_\-\[])(passwords?\|pass\|pwd\|secrets?\|tokens?\|api[_-]?keys?\|(?:private\|auth\|license\|nonce\|logged[_-]?in\|signing\|encryption)[_-]?keys?\|salts?\|credentials?)($\|[_\-\]])/i` | A PCRE pattern. An invalid one is ignored. |
 
 ### `blt_activity_log_value_max_length`
 

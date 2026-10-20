@@ -156,6 +156,15 @@ class Test_Core_Options extends TestCase {
 			'recently_edited',
 			'wp_user_roles',
 			'adminhash',
+			'blt_activity_log_db_version',
+			'auth_key',
+			'secure_auth_key',
+			'logged_in_key',
+			'nonce_key',
+			'auth_salt',
+			'secure_auth_salt',
+			'logged_in_salt',
+			'nonce_salt',
 		) as $option ) {
 			$this->assertTrue( BLT_Activity_Log_Core_Options::is_ignored( $option ), $option );
 		}

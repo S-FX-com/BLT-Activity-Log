@@ -214,7 +214,7 @@ class BLT_Activity_Log_Admin {
 	public static function state_args( array $args ) {
 		$state = array();
 
-		foreach ( array( 'activity', 'from', 'to', 's' ) as $key ) {
+		foreach ( array( 'activity', 'from', 'to', 's', 'item' ) as $key ) {
 			if ( '' !== (string) $args[ $key ] ) {
 				$state[ $key ] = $args[ $key ];
 			}
@@ -291,7 +291,7 @@ class BLT_Activity_Log_Admin {
 		$total      = (int) $table->get_pagination_arg( 'total_items' );
 		$summary    = BLT_Activity_Log_Query::summary();
 		$state      = self::state_args( $args );
-		$filtered   = ! empty( array_intersect_key( $state, array_flip( array( 'activity', 'user', 'from', 'to', 's' ) ) ) );
+		$filtered   = ! empty( array_intersect_key( $state, array_flip( BLT_Activity_Log_Query::FILTER_KEYS ) ) );
 		$activities = $this->activity_options();
 		$users      = BLT_Activity_Log_Query::distinct_users( self::USER_SELECT_LIMIT + 1 );
 		$presets    = $this->date_presets( $state );
@@ -300,7 +300,7 @@ class BLT_Activity_Log_Admin {
 		$export_url = $can_export ? wp_nonce_url(
 			add_query_arg(
 				array_merge(
-					array_intersect_key( $state, array_flip( array( 'activity', 'user', 'from', 'to', 's' ) ) ),
+					array_intersect_key( $state, array_flip( BLT_Activity_Log_Query::FILTER_KEYS ) ),
 					array( 'action' => 'blt_activity_log_export' )
 				),
 				admin_url( 'admin-post.php' )
@@ -372,7 +372,7 @@ class BLT_Activity_Log_Admin {
 	 * What the Clear log card should show: the form, or the preview with the
 	 * exact number of entries that would go.
 	 *
-	 * @return array{stage:string,scope:string,before:string,count:int}
+	 * @return array{stage:string,scope:string,before:string,count:int,max_id:int}
 	 */
 	private function clear_preview() {
 		$none = array(
@@ -380,6 +380,7 @@ class BLT_Activity_Log_Admin {
 			'scope'  => 'all',
 			'before' => '',
 			'count'  => 0,
+			'max_id' => 0,
 		);
 
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Display only: deleting needs a POST with its own nonce.
@@ -392,7 +393,7 @@ class BLT_Activity_Log_Admin {
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 		if ( 'before' === $scope ) {
-			$cutoff = $this->local_day_start( $before );
+			$cutoff = $this->past_day_start( $before );
 
 			if ( null === $cutoff ) {
 				return $none;
@@ -403,9 +404,13 @@ class BLT_Activity_Log_Admin {
 				'scope'  => 'before',
 				'before' => $before,
 				'count'  => BLT_Activity_Log_Query::count_before( $cutoff ),
+				'max_id' => 0,
 			);
 		}
 
+		// What the preview counts is "everything up to this entry". The delete is bound to the same id, so an
+		// entry written between the preview and the confirm is never removed unseen.
+		$max_id  = BLT_Activity_Log_Query::max_id();
 		$summary = BLT_Activity_Log_Query::summary();
 
 		return array(
@@ -413,6 +418,7 @@ class BLT_Activity_Log_Admin {
 			'scope'  => 'all',
 			'before' => '',
 			'count'  => $summary['total'],
+			'max_id' => $max_id,
 		);
 	}
 
@@ -515,7 +521,12 @@ class BLT_Activity_Log_Admin {
 			$links['user_url'] = get_edit_user_link( (int) $row->user_id );
 		}
 
-		if ( '' !== (string) $row->object_label ) {
+		// The same object, not every entry whose label happens to contain the same text.
+		if ( null !== $row->object_id && '' !== (string) $row->object_type ) {
+			$links['item_activity'] = self::page_url( array( 'item' => $row->object_type . '|id:' . (int) $row->object_id ) );
+		} elseif ( null !== $row->object_key && '' !== (string) $row->object_type ) {
+			$links['item_activity'] = self::page_url( array( 'item' => $row->object_type . '|key:' . $row->object_key ) );
+		} elseif ( '' !== (string) $row->object_label ) {
 			$links['item_activity'] = self::page_url(
 				array(
 					'activity' => (string) $row->category,
@@ -662,7 +673,7 @@ class BLT_Activity_Log_Admin {
 		$scope  = ( isset( $_POST['clear_scope'] ) && 'before' === sanitize_key( wp_unslash( $_POST['clear_scope'] ) ) ) ? 'before' : 'all';
 		$before = isset( $_POST['clear_before'] ) ? sanitize_text_field( wp_unslash( $_POST['clear_before'] ) ) : '';
 
-		if ( 'before' === $scope && null === $this->local_day_start( $before ) ) {
+		if ( 'before' === $scope && null === $this->past_day_start( $before ) ) {
 			$this->redirect( array( 'tab' => 'settings' ), 'clear_bad_date' );
 		}
 
@@ -701,7 +712,7 @@ class BLT_Activity_Log_Admin {
 		$budget = BLT_Activity_Log_Pruner::budget();
 
 		if ( 'before' === $scope ) {
-			$cutoff = $this->local_day_start( $before );
+			$cutoff = $this->past_day_start( $before );
 
 			if ( null === $cutoff ) {
 				$this->redirect( array( 'tab' => 'settings' ), 'clear_bad_date' );
@@ -711,14 +722,26 @@ class BLT_Activity_Log_Admin {
 			$mode   = 'cutoff';
 			$value  = $cutoff;
 		} else {
-			// Everything up to now. Entries written after this moment (including
-			// the `log_cleared` entry below) are never touched by a continuation.
-			$value  = BLT_Activity_Log_Query::max_id();
+			// Only what the preview showed: everything up to the entry that was newest then. Entries written
+			// since (including the `log_cleared` entry below) are never touched, by this pass or a continuation.
+			// A confirm that did not come from a preview carries no id and deletes nothing.
+			$previewed = isset( $_POST['clear_max_id'] ) ? absint( wp_unslash( $_POST['clear_max_id'] ) ) : 0;
+
+			if ( $previewed < 1 ) {
+				$this->redirect( array( 'tab' => 'settings' ), 'clear_no_preview' );
+			}
+
+			$value  = min( $previewed, BLT_Activity_Log_Query::max_id() );
 			$result = BLT_Activity_Log_Pruner::delete( 'max_id', $value, $budget );
 			$mode   = 'max_id';
 		}
 
-		if ( $result['more'] ) {
+		if ( $result['error'] && 0 === $result['deleted'] ) {
+			// Nothing went, so there is nothing to record as cleared.
+			$this->redirect( array( 'tab' => 'settings' ), 'clear_failed' );
+		}
+
+		if ( $result['more'] && ! $result['error'] ) {
 			BLT_Activity_Log_Pruner::schedule_continue( $mode, $value );
 		}
 
@@ -751,7 +774,7 @@ class BLT_Activity_Log_Admin {
 				'tab' => 'settings',
 				'n'   => (int) $result['deleted'],
 			),
-			$result['more'] ? 'cleared_partial' : 'cleared'
+			$result['error'] ? 'clear_failed_partial' : ( $result['more'] ? 'cleared_partial' : 'cleared' )
 		);
 	}
 
@@ -789,7 +812,7 @@ class BLT_Activity_Log_Admin {
 						'n'          => $total,
 						'limit'      => $limit,
 					),
-					self::page_url( array_intersect_key( $state, array_flip( array( 'activity', 'user', 'from', 'to', 's' ) ) ) )
+					self::page_url( array_intersect_key( $state, array_flip( BLT_Activity_Log_Query::FILTER_KEYS ) ) )
 				)
 			);
 			exit;
@@ -816,7 +839,7 @@ class BLT_Activity_Log_Admin {
 						array(
 							'field'  => 'filters',
 							'before' => '',
-							'after'  => empty( $state ) ? '' : http_build_query( array_intersect_key( $state, array_flip( array( 'activity', 'user', 'from', 'to', 's' ) ) ) ),
+							'after'  => empty( $state ) ? '' : http_build_query( array_intersect_key( $state, array_flip( BLT_Activity_Log_Query::FILTER_KEYS ) ) ),
 						),
 					),
 				),
@@ -1091,7 +1114,26 @@ class BLT_Activity_Log_Admin {
 			case 'clear_bad_date':
 				return array(
 					'type'    => 'error',
-					'message' => __( 'Nothing was deleted: choose a valid date.', 'blt-activity-log' ),
+					'message' => __( 'Nothing was deleted: choose a date that is today or earlier.', 'blt-activity-log' ),
+				);
+
+			case 'clear_no_preview':
+				return array(
+					'type'    => 'error',
+					'message' => __( 'Nothing was deleted: preview what will be deleted first.', 'blt-activity-log' ),
+				);
+
+			case 'clear_failed':
+				return array(
+					'type'    => 'error',
+					'message' => __( 'Nothing was deleted: the database reported an error. Try again.', 'blt-activity-log' ),
+				);
+
+			case 'clear_failed_partial':
+				return array(
+					'type'    => 'error',
+					/* translators: %s: number of entries removed before the error. */
+					'message' => sprintf( __( 'The database reported an error and the clear stopped. %s entries were removed. Preview and clear again to finish.', 'blt-activity-log' ), number_format_i18n( $count ) ),
 				);
 
 			case 'export_too_large':
@@ -1103,6 +1145,25 @@ class BLT_Activity_Log_Admin {
 		}
 
 		return null;
+	}
+
+	/**
+	 * The start of a site-local day that is not in the future, as a UTC database time.
+	 *
+	 * "Older than a date after today" would also match every entry written
+	 * from now on, including the record that the log was cleared.
+	 *
+	 * @param string $date `Y-m-d`.
+	 * @return string|null Null when the date is not valid or has not started yet.
+	 */
+	private function past_day_start( $date ) {
+		$start = $this->local_day_start( $date );
+
+		if ( null === $start || strtotime( $start . ' UTC' ) > time() ) {
+			return null;
+		}
+
+		return $start;
 	}
 
 	/**

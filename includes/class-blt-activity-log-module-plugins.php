@@ -107,6 +107,8 @@ class BLT_Activity_Log_Module_Plugins extends BLT_Activity_Log_Module_Base {
 		$known     = BLT_Activity_Log_Snapshot::stored()['plugins'];
 		$method    = $this->update_method( $upgrader );
 
+		$moved = array();
+
 		foreach ( $files as $file ) {
 			$to   = isset( $installed[ $file ]['Version'] ) ? (string) $installed[ $file ]['Version'] : '';
 			$name = isset( $installed[ $file ]['Name'] ) ? (string) $installed[ $file ]['Name'] : $file;
@@ -114,6 +116,16 @@ class BLT_Activity_Log_Module_Plugins extends BLT_Activity_Log_Module_Base {
 			// An upload over a plugin that is already installed is an update.
 			$was_installed = array_key_exists( $file, $known );
 			$action        = ( 'install' === $hook_extra['action'] && ! $was_installed ) ? 'installed' : 'updated';
+
+			// WordPress fires this hook after a failed update too, and a bulk update fires it once with every
+			// plugin it was asked about, up to date, failed or not reached. A plugin whose version did not
+			// move (an upload excepted: it may replace a plugin with itself) or that is gone was not updated.
+			// It is left out here and out of the snapshot, so a plugin that really changed is still found.
+			if ( 'updated' === $action && 'upload' !== $method && ( '' === $to || ( $was_installed && (string) $known[ $file ] === $to ) ) ) {
+				continue;
+			}
+
+			$moved[] = $file;
 
 			BLT_Activity_Log_Logger::record(
 				array(
@@ -133,7 +145,7 @@ class BLT_Activity_Log_Module_Plugins extends BLT_Activity_Log_Module_Base {
 			);
 		}
 
-		BLT_Activity_Log_Snapshot::refresh();
+		BLT_Activity_Log_Snapshot::refresh_keys( $moved );
 	}
 
 	/**
@@ -204,7 +216,10 @@ class BLT_Activity_Log_Module_Plugins extends BLT_Activity_Log_Module_Base {
 			)
 		);
 
-		BLT_Activity_Log_Snapshot::refresh();
+		// delete_plugins() leaves the plugin list cached; without this the deleted plugin stays in the snapshot.
+		wp_clean_plugins_cache( false );
+
+		BLT_Activity_Log_Snapshot::refresh_keys( array( $plugin_file ) );
 	}
 
 	/**

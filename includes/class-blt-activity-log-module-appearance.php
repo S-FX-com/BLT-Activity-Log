@@ -35,6 +35,13 @@ class BLT_Activity_Log_Module_Appearance extends BLT_Activity_Log_Module_Base {
 	private $menu_names = array();
 
 	/**
+	 * Whether a theme switch is under way in this request.
+	 *
+	 * @var bool
+	 */
+	private $switching = false;
+
+	/**
 	 * Name of each menu just before this request edited it, keyed by term ID.
 	 *
 	 * @var array<int,string>
@@ -73,6 +80,7 @@ class BLT_Activity_Log_Module_Appearance extends BLT_Activity_Log_Module_Base {
 	 * {@inheritdoc}
 	 */
 	public function register() {
+		$this->listen( 'update_option_stylesheet', 'on_stylesheet_changed', 10, 0 );
 		$this->listen( 'wp_create_nav_menu', 'on_menu_created', 10, 2 );
 		$this->listen( 'wp_update_nav_menu', 'on_menu_updated', 10, 2 );
 		$this->listen( 'edit_terms', 'on_before_menu_edit', 10, 2 );
@@ -344,8 +352,10 @@ class BLT_Activity_Log_Module_Appearance extends BLT_Activity_Log_Module_Base {
 		$old_value = is_array( $old_value ) ? $old_value : array();
 		$new_value = is_array( $new_value ) ? $new_value : array();
 
-		// A theme switch rewrites the new theme's mods; the switch is its own entry.
-		if ( ! did_action( 'init' ) || did_action( 'switch_theme' ) ) {
+		// A theme switch rewrites the new theme's mods; the switch is its own entry. Its first write (the new
+		// theme's mods, migrated from the old ones) comes after the stylesheet option changes and before the
+		// switch_theme action fires, so neither of the other two checks sees it.
+		if ( $this->switching || ! did_action( 'init' ) || did_action( 'switch_theme' ) ) {
 			return;
 		}
 
@@ -366,8 +376,8 @@ class BLT_Activity_Log_Module_Appearance extends BLT_Activity_Log_Module_Base {
 			if ( $before !== $after ) {
 				$location_changes[] = array(
 					'field'  => 'location[' . $location . ']',
-					'before' => $before ? $this->menu_name( $before ) : '',
-					'after'  => $after ? $this->menu_name( $after ) : '',
+					'before' => $before ? $this->menu_label( $before ) : '',
+					'after'  => $after ? $this->menu_label( $after ) : '',
 				);
 			}
 		}
@@ -418,6 +428,30 @@ class BLT_Activity_Log_Module_Appearance extends BLT_Activity_Log_Module_Base {
 				'absorb'       => array( 'customizer_published' ),
 			)
 		);
+	}
+
+	/**
+	 * The active theme is being switched: its mods are about to be rewritten as part of it.
+	 *
+	 * @return void
+	 */
+	public function on_stylesheet_changed() {
+		$this->switching = true;
+	}
+
+	/**
+	 * A menu's name, falling back to the name captured before it was deleted.
+	 *
+	 * Deleting a menu removes its term first and only then clears the location
+	 * that pointed at it, so the name is no longer there to look up.
+	 *
+	 * @param int $menu_id Menu term ID.
+	 * @return string
+	 */
+	private function menu_label( $menu_id ) {
+		$name = $this->menu_name( $menu_id );
+
+		return ( '' === $name && isset( $this->menu_names[ (int) $menu_id ] ) ) ? $this->menu_names[ (int) $menu_id ] : $name;
 	}
 
 	/**

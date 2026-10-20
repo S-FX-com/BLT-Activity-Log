@@ -38,6 +38,12 @@ class BLT_Activity_Log_Snapshot {
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		}
 
+		// get_plugins() and wp_get_themes() keep their lists in the object cache with no expiry. With a
+		// persistent cache (Redis, Memcached) they would answer with the list from before an FTP or Composer
+		// deploy, which is the very change this reads the disk to find.
+		wp_clean_plugins_cache( false );
+		wp_clean_themes_cache( false );
+
 		$plugins = array();
 
 		foreach ( get_plugins() as $file => $data ) {
@@ -91,6 +97,55 @@ class BLT_Activity_Log_Snapshot {
 		update_option( self::OPTION, $snapshot, false );
 
 		return $snapshot;
+	}
+
+	/**
+	 * Re-read what is installed and store only the named items.
+	 *
+	 * A logged change moves its own plugin, theme or core version on. The rest
+	 * of the stored snapshot stays as it was, so a change somebody made outside
+	 * WordPress to something else is still there to be found by the daily run,
+	 * instead of being absorbed by an unrelated update.
+	 *
+	 * @param string[] $plugins  Plugin files that changed.
+	 * @param string[] $themes   Theme stylesheets that changed.
+	 * @param array    $override See current().
+	 * @param bool     $core     Whether the core version changed.
+	 * @return array The snapshot stored.
+	 */
+	public static function refresh_keys( array $plugins = array(), array $themes = array(), array $override = array(), $core = false ) {
+		$stored  = self::stored();
+		$current = self::current( $override );
+
+		// No baseline yet: take the whole thing, there is nothing to protect.
+		if ( '' === $stored['core'] ) {
+			update_option( self::OPTION, $current, false );
+
+			return $current;
+		}
+
+		foreach ( array(
+			'plugins' => $plugins,
+			'themes'  => $themes,
+		) as $bucket => $keys ) {
+			foreach ( $keys as $key ) {
+				$key = (string) $key;
+
+				if ( array_key_exists( $key, $current[ $bucket ] ) ) {
+					$stored[ $bucket ][ $key ] = $current[ $bucket ][ $key ];
+				} else {
+					unset( $stored[ $bucket ][ $key ] );
+				}
+			}
+		}
+
+		if ( $core ) {
+			$stored['core'] = $current['core'];
+		}
+
+		update_option( self::OPTION, $stored, false );
+
+		return $stored;
 	}
 
 	/**
@@ -174,6 +229,12 @@ class BLT_Activity_Log_Snapshot {
 			// First run, or the option was lost: take the baseline, report nothing.
 			if ( '' !== $stored['core'] ) {
 				foreach ( self::diff( $stored, $current ) as $change ) {
+					// A category the owner switched off records nothing; its changes still move the baseline,
+					// so switching it on later does not report everything that happened meanwhile.
+					if ( ! BLT_Activity_Log_Settings::module_enabled( $change['kind'], true ) ) {
+						continue;
+					}
+
 					self::record_external_change( $change );
 				}
 			}

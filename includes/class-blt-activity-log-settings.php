@@ -280,9 +280,10 @@ class BLT_Activity_Log_Settings {
 
 		return array_merge(
 			array(
-				'started_at'      => '',
-				'last_prune_at'   => 0,
-				'last_prune_rows' => 0,
+				'started_at'         => '',
+				'last_prune_at'      => 0,
+				'last_prune_rows'    => 0,
+				'prune_requested_at' => 0,
 			),
 			is_array( $stored ) ? $stored : array()
 		);

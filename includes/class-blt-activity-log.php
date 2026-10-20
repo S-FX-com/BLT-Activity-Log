@@ -99,6 +99,7 @@ class BLT_Activity_Log {
 					'object_key'   => isset( $args['object_key'] ) ? (string) $args['object_key'] : null,
 					'object_label' => isset( $args['object_label'] ) ? (string) $args['object_label'] : '',
 					'details'      => $details,
+					'keep'         => true,
 				)
 			);
 		} catch ( \Throwable $e ) {

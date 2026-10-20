@@ -227,6 +227,8 @@ class BLT_Activity_Log_Logger {
 			'object_label' => self::cut( $label, 255 ),
 			'details'      => isset( $entry['details'] ) && is_array( $entry['details'] ) ? $entry['details'] : array(),
 			'absorb'       => isset( $entry['absorb'] ) && is_array( $entry['absorb'] ) ? array_values( $entry['absorb'] ) : array(),
+			// An entry from another plugin: kept even with no recognized detail, and never merged into an earlier row.
+			'keep'         => ! empty( $entry['keep'] ),
 		);
 
 		$override = array();
@@ -244,7 +246,8 @@ class BLT_Activity_Log_Logger {
 
 		$normalized = array_merge( $normalized, $context );
 
-		$time                     = isset( $entry['created_at'] ) ? (string) $entry['created_at'] : gmdate( 'Y-m-d H:i:s' );
+		// A malformed time would fail the whole multi-row INSERT in strict mode, so it falls back to now.
+		$time                     = ( isset( $entry['created_at'] ) && is_string( $entry['created_at'] ) && 1 === preg_match( '/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $entry['created_at'] ) ) ? $entry['created_at'] : gmdate( 'Y-m-d H:i:s' );
 		$normalized['created_at'] = $time;
 		$normalized['last_at']    = $time;
 
@@ -352,8 +355,9 @@ class BLT_Activity_Log_Logger {
 		$to_write = array();
 		$ids      = array();
 
-		try {
-			foreach ( $entries as $entry ) {
+		foreach ( $entries as $entry ) {
+			// A filter that throws, or a merge that fails, costs that entry and no other.
+			try {
 				$entry = self::finalize( $entry );
 
 				if ( null === $entry ) {
@@ -365,8 +369,12 @@ class BLT_Activity_Log_Logger {
 				}
 
 				$to_write[] = $entry;
+			} catch ( \Throwable $e ) {
+				self::report( $e );
 			}
+		}
 
+		try {
 			$ids = self::insert( $to_write );
 		} catch ( \Throwable $e ) {
 			self::report( $e );
@@ -384,7 +392,7 @@ class BLT_Activity_Log_Logger {
 	 * @return array|null Null when the entry should not be written.
 	 */
 	private static function finalize( array $entry ) {
-		if ( BLT_Activity_Log_Coalescer::is_empty_update( $entry ) ) {
+		if ( empty( $entry['keep'] ) && BLT_Activity_Log_Coalescer::is_empty_update( $entry ) ) {
 			return null;
 		}
 
@@ -418,7 +426,24 @@ class BLT_Activity_Log_Logger {
 		}
 
 		// Redaction and caps run after the filters, so nothing a filter adds
-		// can reach the table unredacted.
+		// can reach the table unredacted, or too long for its column (which would fail a whole
+		// multi-row INSERT in strict mode).
+		foreach ( array(
+			'category'     => 32,
+			'action'       => 48,
+			'object_type'  => 64,
+			'object_label' => 255,
+		) as $field => $max ) {
+			$entry[ $field ] = self::cut( is_scalar( $entry[ $field ] ) ? (string) $entry[ $field ] : '', $max );
+		}
+
+		if ( '' === $entry['category'] || '' === $entry['action'] ) {
+			return null;
+		}
+
+		$entry['object_id']  = ( isset( $entry['object_id'] ) && '' !== $entry['object_id'] && null !== $entry['object_id'] ) ? absint( $entry['object_id'] ) : null;
+		$entry['object_key'] = ( isset( $entry['object_key'] ) && is_scalar( $entry['object_key'] ) && '' !== (string) $entry['object_key'] ) ? self::cut( (string) $entry['object_key'], 191 ) : null;
+
 		$entry['details'] = BLT_Activity_Log_Redactor::sanitize_details( $entry['details'], BLT_Activity_Log_Redactor::max_length() );
 
 		return $entry;
@@ -433,7 +458,7 @@ class BLT_Activity_Log_Logger {
 	private static function try_coalesce( array $entry ) {
 		global $wpdb;
 
-		if ( 'updated' !== $entry['action'] ) {
+		if ( 'updated' !== $entry['action'] || ! empty( $entry['keep'] ) ) {
 			return false;
 		}
 
@@ -464,63 +489,91 @@ class BLT_Activity_Log_Logger {
 			$object_arg = (string) $entry['object_key'];
 		}
 
-		// The newest entry for this user and object, of any action: an
-		// `updated` is never merged across a publish or a trash.
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table is ours; the object condition is one of two fixed strings; values are bound.
-		$row = $wpdb->get_row(
-			// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- {$object_sql} carries the fifth placeholder.
-			$wpdb->prepare(
-				"SELECT id, action, occurrences, details FROM {$table} WHERE user_id = %d AND category = %s AND object_type = %s AND {$object_sql} AND last_at >= %s ORDER BY id DESC LIMIT 1", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-				(int) $entry['user_id'],
-				$entry['category'],
-				$entry['object_type'],
-				$object_arg,
-				$cutoff
-			)
-		);
+		// Two requests can merge into the same row at once (a Bricks save and a meta box, a double click).
+		// The write names the version it read, and a loser reads the winner's row and merges on top of it.
+		for ( $attempt = 0; $attempt < 3; $attempt++ ) {
+			// The newest entry for this user and object, of any action: an
+			// `updated` is never merged across a publish or a trash.
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table is ours; the object condition is one of two fixed strings; values are bound.
+			$row = $wpdb->get_row(
+				// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- {$object_sql} carries the fifth placeholder.
+				$wpdb->prepare(
+					"SELECT id, action, occurrences, last_at, details FROM {$table} WHERE user_id = %d AND category = %s AND object_type = %s AND {$object_sql} AND last_at >= %s ORDER BY id DESC LIMIT 1", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+					(int) $entry['user_id'],
+					$entry['category'],
+					$entry['object_type'],
+					$object_arg,
+					$cutoff
+				)
+			);
 
-		if ( ! $row || ! BLT_Activity_Log_Coalescer::can_absorb( (string) $row->action, 'updated' ) ) {
-			return false;
-		}
+			if ( ! $row || ! BLT_Activity_Log_Coalescer::can_absorb( (string) $row->action, 'updated' ) ) {
+				return false;
+			}
 
-		$stored = ! empty( $row->details ) ? json_decode( (string) $row->details, true ) : array();
+			$stored = ! empty( $row->details ) ? json_decode( (string) $row->details, true ) : array();
 
-		$merged = BLT_Activity_Log_Coalescer::merge_row(
-			array(
-				'action'      => (string) $row->action,
+			$merged = BLT_Activity_Log_Coalescer::merge_row(
+				array(
+					'action'      => (string) $row->action,
+					'occurrences' => (int) $row->occurrences,
+					'details'     => is_array( $stored ) ? $stored : array(),
+				),
+				$entry
+			);
+
+			$where         = array(
+				'id'          => (int) $row->id,
 				'occurrences' => (int) $row->occurrences,
-				'details'     => is_array( $stored ) ? $stored : array(),
-			),
-			$entry
-		);
+				'last_at'     => (string) $row->last_at,
+			);
+			$where_formats = array( '%d', '%d', '%s' );
 
-		if ( $merged['drop'] ) {
+			if ( $merged['drop'] ) {
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+				$deleted = $wpdb->delete( $table, $where, $where_formats );
+
+				if ( false === $deleted ) {
+					self::report( 'merge failed: ' . $wpdb->last_error );
+
+					return false;
+				}
+
+				if ( 1 === (int) $deleted ) {
+					return true;
+				}
+
+				continue;
+			}
+
+			$data    = array(
+				'details'     => BLT_Activity_Log_Redactor::encode( BLT_Activity_Log_Redactor::cap_details( $merged['details'] ) ),
+				'occurrences' => $merged['occurrences'],
+				'last_at'     => $merged['last_at'],
+			);
+			$formats = array( '%s', '%d', '%s' );
+
+			if ( '' !== $merged['object_label'] ) {
+				$data['object_label'] = $merged['object_label'];
+				$formats[]            = '%s';
+			}
+
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-			return false !== $wpdb->delete( $table, array( 'id' => (int) $row->id ), array( '%d' ) );
+			$updated = $wpdb->update( $table, $data, $where, $formats, $where_formats );
+
+			if ( false === $updated ) {
+				self::report( 'update failed: ' . $wpdb->last_error );
+
+				return false;
+			}
+
+			if ( 1 === (int) $updated ) {
+				return true;
+			}
 		}
 
-		$data    = array(
-			'details'     => BLT_Activity_Log_Redactor::encode( BLT_Activity_Log_Redactor::cap_details( $merged['details'] ) ),
-			'occurrences' => $merged['occurrences'],
-			'last_at'     => $merged['last_at'],
-		);
-		$formats = array( '%s', '%d', '%s' );
-
-		if ( '' !== $merged['object_label'] ) {
-			$data['object_label'] = $merged['object_label'];
-			$formats[]            = '%s';
-		}
-
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$updated = $wpdb->update( $table, $data, array( 'id' => (int) $row->id ), $formats, array( '%d' ) );
-
-		if ( false === $updated ) {
-			self::report( 'update failed: ' . $wpdb->last_error );
-
-			return false;
-		}
-
-		return true;
+		// Still losing the race after three reads: record this save as its own row rather than lose it.
+		return false;
 	}
 
 	/**
@@ -544,24 +597,11 @@ class BLT_Activity_Log_Logger {
 		// entry (a multi-row INSERT cannot say which id is whose).
 		if ( 1 === count( $entries ) || has_action( 'blt_activity_log_logged' ) ) {
 			foreach ( $entries as $entry ) {
-				$row = self::row( $entry );
+				$id = self::insert_one( $entry );
 
-				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-				if ( false === $wpdb->insert( $table, $row, array_values( self::COLUMNS ) ) ) {
-					self::report( 'insert failed: ' . $wpdb->last_error );
-					continue;
+				if ( $id > 0 ) {
+					$ids[] = $id;
 				}
-
-				$id    = (int) $wpdb->insert_id;
-				$ids[] = $id;
-
-				/**
-				 * Fires after an entry is written.
-				 *
-				 * @param array $entry The stored entry.
-				 * @param int   $id    Row id.
-				 */
-				do_action( 'blt_activity_log_logged', $entry, $id );
 			}
 
 			return $ids;
@@ -595,10 +635,51 @@ class BLT_Activity_Log_Logger {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Table and column names are ours; the placeholders are generated per row above, and every value is bound.
 			if ( false === $wpdb->query( $wpdb->prepare( $sql, $values ) ) ) {
 				self::report( 'insert failed: ' . $wpdb->last_error );
+
+				// One bad row should not take its 99 neighbors with it: try them one at a time.
+				foreach ( $chunk as $entry ) {
+					self::insert_one( $entry );
+				}
 			}
 		}
 
 		return $ids;
+	}
+
+	/**
+	 * Insert one row and announce it.
+	 *
+	 * @param array $entry Cleaned entry.
+	 * @return int The row id, or 0 when the insert failed.
+	 */
+	private static function insert_one( array $entry ) {
+		global $wpdb;
+
+		$row = self::row( $entry );
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		if ( false === $wpdb->insert( BLT_Activity_Log_Query::table(), $row, array_values( self::COLUMNS ) ) ) {
+			self::report( 'insert failed: ' . $wpdb->last_error );
+
+			return 0;
+		}
+
+		$id = (int) $wpdb->insert_id;
+
+		// A listener that throws must not stop the rows after this one.
+		try {
+			/**
+			 * Fires after an entry is written.
+			 *
+			 * @param array $entry The stored entry.
+			 * @param int   $id    Row id.
+			 */
+			do_action( 'blt_activity_log_logged', $entry, $id );
+		} catch ( \Throwable $e ) {
+			self::report( $e );
+		}
+
+		return $id;
 	}
 
 	/**

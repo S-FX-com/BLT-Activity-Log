@@ -26,9 +26,10 @@ class BLT_Activity_Log_Coalescer {
 	const DETAIL_ACTIONS = array( 'updated', 'role_changed' );
 
 	/**
-	 * Detail keys that make an `updated` entry worth keeping.
+	 * Detail keys that make an `updated` entry worth keeping. `method` and `via` are not here: they say how
+	 * a change was made, so on their own (everything else reverted) there is nothing left to record.
 	 */
-	const CONTENT_KEYS = array( 'changes', 'content', 'bricks', 'terms', 'versions', 'summary', 'method', 'via' );
+	const CONTENT_KEYS = array( 'changes', 'content', 'bricks', 'terms', 'versions', 'summary' );
 
 	/**
 	 * Whether a new entry may be merged into an existing one.
@@ -279,6 +280,15 @@ class BLT_Activity_Log_Coalescer {
 			}
 		}
 
+		// A later change normally starts where the earlier one ended. When it ends where the earlier one began
+		// instead, the two arrived the wrong way round: a save_post callback that saves the post again fires
+		// its hook first, and the outer save then reports a stale "before" and "after". Put them in time order.
+		if ( isset( $first['before'], $first['after'], $second['before'], $second['after'] )
+			&& (string) $second['before'] !== (string) $first['after']
+			&& (string) $second['after'] === (string) $first['before'] ) {
+			list( $first, $second ) = array( $second, $first );
+		}
+
 		$merged = array( 'field' => $first['field'] );
 
 		if ( array_key_exists( 'before', $first ) ) {
@@ -332,6 +342,19 @@ class BLT_Activity_Log_Coalescer {
 			return $earlier;
 		}
 
+		if ( isset( $earlier['hashes'][0], $earlier['hashes'][1], $later['hashes'][0], $later['hashes'][1] ) ) {
+			// The same save reported twice (the template REST controllers fire the hook after saving, and
+			// WordPress fired it once already): it is one change, and its blocks must not be counted twice.
+			if ( $earlier['hashes'][0] === $later['hashes'][0] && $earlier['hashes'][1] === $later['hashes'][1] ) {
+				return $earlier;
+			}
+
+			// Arrived the wrong way round (a nested save): put them in time order. See merge_change().
+			if ( $later['hashes'][0] !== $earlier['hashes'][1] && $later['hashes'][1] === $earlier['hashes'][0] ) {
+				list( $earlier, $later ) = array( $later, $earlier );
+			}
+		}
+
 		$delta = self::net_delta(
 			isset( $earlier['blocks_added'] ) ? (array) $earlier['blocks_added'] : array(),
 			isset( $earlier['blocks_removed'] ) ? (array) $earlier['blocks_removed'] : array(),
@@ -341,11 +364,23 @@ class BLT_Activity_Log_Coalescer {
 
 		$first_chars = isset( $earlier['chars'][0] ) ? (int) $earlier['chars'][0] : null;
 		$last_chars  = isset( $later['chars'][1] ) ? (int) $later['chars'][1] : null;
+		$first_hash  = isset( $earlier['hashes'][0] ) ? (string) $earlier['hashes'][0] : null;
+		$last_hash   = isset( $later['hashes'][1] ) ? (string) $later['hashes'][1] : null;
 
 		$merged = array();
 
 		if ( null !== $first_chars && null !== $last_chars ) {
 			$merged['chars'] = array( $first_chars, $last_chars );
+		}
+
+		if ( null !== $first_hash && null !== $last_hash ) {
+			$merged['hashes'] = array( $first_hash, $last_hash );
+
+			// Edited and edited back: the content is what it was at the start. Exact, from a fingerprint of
+			// the content. A length cannot say: "Monday" to "Friday" to "Sunday" ends the same length.
+			if ( $first_hash === $last_hash ) {
+				return array();
+			}
 		}
 
 		if ( ! empty( $delta['added'] ) ) {
@@ -354,11 +389,6 @@ class BLT_Activity_Log_Coalescer {
 
 		if ( ! empty( $delta['removed'] ) ) {
 			$merged['blocks_removed'] = $delta['removed'];
-		}
-
-		// Edited and edited back: same length and no block movement means no content change.
-		if ( empty( $delta['added'] ) && empty( $delta['removed'] ) && $first_chars === $last_chars ) {
-			return array();
 		}
 
 		if ( isset( $later['revision_id'] ) ) {

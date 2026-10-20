@@ -265,18 +265,56 @@ class Test_Coalescer extends TestCase {
 			array(
 				'content' => array(
 					'chars'        => array( 100, 110 ),
+					'hashes'       => array( 'aaaa', 'bbbb' ),
 					'blocks_added' => array( 'core/paragraph' => 1 ),
 				),
 			),
 			array(
 				'content' => array(
 					'chars'          => array( 110, 100 ),
+					'hashes'         => array( 'bbbb', 'aaaa' ),
 					'blocks_removed' => array( 'core/paragraph' => 1 ),
 				),
 			)
 		);
 
 		$this->assertArrayNotHasKey( 'content', $merged );
+	}
+
+	/**
+	 * Two same-length edits are two edits, not an edit and its undoing: "Monday" to "Friday" to "Sunday".
+	 * Only the fingerprints can tell, so without them nothing is dropped either.
+	 *
+	 * @return void
+	 */
+	public function test_same_length_edits_are_not_mistaken_for_a_revert() {
+		$merged = BLT_Activity_Log_Coalescer::merge_details(
+			array( 'content' => array( 'chars' => array( 100, 100 ), 'hashes' => array( 'aaaa', 'bbbb' ) ) ),
+			array( 'content' => array( 'chars' => array( 100, 100 ), 'hashes' => array( 'bbbb', 'cccc' ) ) )
+		);
+
+		$this->assertSame( array( 100, 100 ), $merged['content']['chars'] );
+		$this->assertSame( array( 'aaaa', 'cccc' ), $merged['content']['hashes'], 'First before, last after.' );
+
+		// Rows written without fingerprints are never dropped on a guess from the length.
+		$legacy = BLT_Activity_Log_Coalescer::merge_details(
+			array( 'content' => array( 'chars' => array( 100, 100 ) ) ),
+			array( 'content' => array( 'chars' => array( 100, 100 ) ) )
+		);
+
+		$this->assertArrayHasKey( 'content', $legacy );
+		$this->assertTrue( BLT_Activity_Log_Coalescer::has_content( $legacy ) );
+	}
+
+	/**
+	 * How a change was made does not make an otherwise empty update worth keeping.
+	 *
+	 * @return void
+	 */
+	public function test_method_and_via_alone_are_not_content() {
+		$this->assertFalse( BLT_Activity_Log_Coalescer::has_content( array( 'via' => 'customizer' ) ) );
+		$this->assertFalse( BLT_Activity_Log_Coalescer::has_content( array( 'method' => 'automatic' ) ) );
+		$this->assertTrue( BLT_Activity_Log_Coalescer::has_content( array( 'summary' => 'x' ) ) );
 	}
 
 	/**
@@ -416,5 +454,70 @@ class Test_Coalescer extends TestCase {
 
 			$this->assertSame( array( $item ), BLT_Activity_Log_Coalescer::merge_changes( array( $item ), array( $item ) ), $flag );
 		}
+	}
+
+	/**
+	 * A save_post callback that saves the post again fires its hook first, and the outer save reports a
+	 * stale before and after. The change is still Orig to Generated, not dropped.
+	 *
+	 * @return void
+	 */
+	public function test_a_nested_save_is_put_in_time_order() {
+		$inner = array( 'field' => 'post_title', 'before' => 'User title', 'after' => 'Generated title' );
+		$outer = array( 'field' => 'post_title', 'before' => 'Orig title', 'after' => 'User title' );
+
+		$merged = BLT_Activity_Log_Coalescer::merge_changes( array( $inner ), array( $outer ) );
+
+		$this->assertCount( 1, $merged );
+		$this->assertSame( 'Orig title', $merged[0]['before'] );
+		$this->assertSame( 'Generated title', $merged[0]['after'] );
+
+		// The ordinary order, and a genuine revert, are untouched.
+		$this->assertSame( 'Generated title', BLT_Activity_Log_Coalescer::merge_changes( array( $outer ), array( $inner ) )[0]['after'] );
+		$this->assertSame( array(), BLT_Activity_Log_Coalescer::merge_changes( array( array( 'field' => 'f', 'before' => 'A', 'after' => 'B' ) ), array( array( 'field' => 'f', 'before' => 'B', 'after' => 'A' ) ) ) );
+	}
+
+	/**
+	 * The same content save reported twice is one change; the blocks are not doubled.
+	 *
+	 * @return void
+	 */
+	public function test_the_same_content_save_reported_twice_counts_once() {
+		$save = array(
+			'chars'        => array( 100, 150 ),
+			'hashes'       => array( 'aaaa', 'bbbb' ),
+			'blocks_added' => array( 'core/image' => 1 ),
+		);
+
+		$merged = BLT_Activity_Log_Coalescer::merge_details( array( 'content' => $save ), array( 'content' => $save ) );
+
+		$this->assertSame( array( 'core/image' => 1 ), $merged['content']['blocks_added'] );
+		$this->assertSame( array( 100, 150 ), $merged['content']['chars'] );
+
+		// Two different saves still add up.
+		$next = array(
+			'chars'        => array( 150, 200 ),
+			'hashes'       => array( 'bbbb', 'cccc' ),
+			'blocks_added' => array( 'core/image' => 1 ),
+		);
+
+		$both = BLT_Activity_Log_Coalescer::merge_details( array( 'content' => $save ), array( 'content' => $next ) );
+
+		$this->assertSame( array( 'core/image' => 2 ), $both['content']['blocks_added'] );
+	}
+
+	/**
+	 * Nested content saves arrive inner first; the content summary is put in order as well.
+	 *
+	 * @return void
+	 */
+	public function test_nested_content_saves_are_put_in_time_order() {
+		$inner = array( 'chars' => array( 120, 130 ), 'hashes' => array( 'user', 'generated' ) );
+		$outer = array( 'chars' => array( 100, 120 ), 'hashes' => array( 'orig', 'user' ) );
+
+		$merged = BLT_Activity_Log_Coalescer::merge_details( array( 'content' => $inner ), array( 'content' => $outer ) );
+
+		$this->assertSame( array( 100, 130 ), $merged['content']['chars'] );
+		$this->assertSame( array( 'orig', 'generated' ), $merged['content']['hashes'] );
 	}
 }

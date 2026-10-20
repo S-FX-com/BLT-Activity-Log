@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: BLT Activity Log 0.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/S-FX-com/BLT-Activity-Log/issues\n"
-"POT-Creation-Date: 2026-10-20 02:55+0000\n"
+"POT-Creation-Date: 2026-10-20 03:25+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -14,48 +14,60 @@ msgstr ""
 "X-Generator: bin/make-pot.js\n"
 "X-Domain: blt-activity-log\n"
 
-#: admin/class-blt-activity-log-admin.php:1017
+#: admin/class-blt-activity-log-admin.php:1040
 msgid "This file is incomplete: a database error stopped it after %d entries. Download it again."
 msgstr ""
 
-#: admin/class-blt-activity-log-admin.php:1061
+#: admin/class-blt-activity-log-admin.php:1084
 msgid "Settings saved."
 msgstr ""
 
-#: admin/class-blt-activity-log-admin.php:1068
+#: admin/class-blt-activity-log-admin.php:1091
 msgid "Settings saved. Retention must be a whole number of days from 1 to 365, so it is %s day."
 msgid_plural "Settings saved. Retention must be a whole number of days from 1 to 365, so it is %s days."
 msgstr[0] ""
 msgstr[1] ""
 
-#: admin/class-blt-activity-log-admin.php:1075
+#: admin/class-blt-activity-log-admin.php:1098
 msgid "Log cleared: %s entry removed."
 msgid_plural "Log cleared: %s entries removed."
 msgstr[0] ""
 msgstr[1] ""
 
-#: admin/class-blt-activity-log-admin.php:1082
+#: admin/class-blt-activity-log-admin.php:1105
 msgid "%s entries were removed. There are more to remove, so the rest will be cleared in the background within a few minutes."
 msgstr ""
 
-#: admin/class-blt-activity-log-admin.php:1088
+#: admin/class-blt-activity-log-admin.php:1111
 msgid "Nothing was deleted: tick the box to confirm."
 msgstr ""
 
-#: admin/class-blt-activity-log-admin.php:1094
-msgid "Nothing was deleted: choose a valid date."
+#: admin/class-blt-activity-log-admin.php:1117
+msgid "Nothing was deleted: choose a date that is today or earlier."
 msgstr ""
 
-#: admin/class-blt-activity-log-admin.php:1101
+#: admin/class-blt-activity-log-admin.php:1123
+msgid "Nothing was deleted: preview what will be deleted first."
+msgstr ""
+
+#: admin/class-blt-activity-log-admin.php:1129
+msgid "Nothing was deleted: the database reported an error. Try again."
+msgstr ""
+
+#: admin/class-blt-activity-log-admin.php:1136
+msgid "The database reported an error and the clear stopped. %s entries were removed. Preview and clear again to finish."
+msgstr ""
+
+#: admin/class-blt-activity-log-admin.php:1143
 msgid "%1$s entries match, which is more than one export can hold (%2$s). Narrow the filters, for example to a shorter date range, and export again."
-msgstr ""
-
-#: admin/class-blt-activity-log-admin.php:1131
-msgid "You do not have permission to do that."
 msgstr ""
 
 #: admin/class-blt-activity-log-admin.php:118
 msgid "Entries per page"
+msgstr ""
+
+#: admin/class-blt-activity-log-admin.php:1192
+msgid "You do not have permission to do that."
 msgstr ""
 
 #: admin/class-blt-activity-log-admin.php:150
@@ -65,7 +77,7 @@ msgstr ""
 #: admin/class-blt-activity-log-admin.php:154
 #: admin/class-blt-activity-log-admin.php:366
 #: admin/views/header.php:53
-#: includes/class-blt-activity-log-formatter.php:299
+#: includes/class-blt-activity-log-formatter.php:323
 #: includes/class-blt-activity-log-module-settings.php:59
 msgid "Settings"
 msgstr ""
@@ -83,38 +95,38 @@ msgstr ""
 msgid "Entry"
 msgstr ""
 
-#: admin/class-blt-activity-log-admin.php:491
+#: admin/class-blt-activity-log-admin.php:497
 msgid "Today"
 msgstr ""
 
-#: admin/class-blt-activity-log-admin.php:492
+#: admin/class-blt-activity-log-admin.php:498
 msgid "Yesterday"
 msgstr ""
 
-#: admin/class-blt-activity-log-admin.php:493
+#: admin/class-blt-activity-log-admin.php:499
 msgid "Last 7 days"
 msgstr ""
 
-#: admin/class-blt-activity-log-admin.php:494
+#: admin/class-blt-activity-log-admin.php:500
 msgid "Last 30 days"
 msgstr ""
 
 #: admin/class-blt-activity-log-admin.php:97
 #: admin/class-blt-activity-log-admin.php:98
 #: admin/views/header.php:28
-#: includes/class-blt-activity-log-formatter.php:302
+#: includes/class-blt-activity-log-formatter.php:326
 #: includes/class-blt-activity-log-install.php:52
 #: includes/class-blt-activity-log-module-system.php:34
-#: includes/class-blt-activity-log-privacy.php:81
-#: includes/class-blt-activity-log-privacy.php:96
+#: includes/class-blt-activity-log-privacy.php:83
+#: includes/class-blt-activity-log-privacy.php:98
 msgid "BLT Activity Log"
 msgstr ""
 
-#: admin/class-blt-activity-log-list-table.php:115
+#: admin/class-blt-activity-log-list-table.php:117
 msgid "No activity matches these filters."
 msgstr ""
 
-#: admin/class-blt-activity-log-list-table.php:162
+#: admin/class-blt-activity-log-list-table.php:164
 msgid "Saved more than once, merged into this entry"
 msgstr ""
 
@@ -125,19 +137,19 @@ msgstr ""
 
 #: admin/class-blt-activity-log-list-table.php:57
 #: admin/views/entry.php:65
-#: admin/views/log.php:88
+#: admin/views/log.php:91
 msgid "User"
 msgstr ""
 
 #: admin/class-blt-activity-log-list-table.php:58
 #: admin/views/log.php:37
-#: admin/views/log.php:70
-#: includes/class-blt-activity-log-privacy.php:142
+#: admin/views/log.php:73
+#: includes/class-blt-activity-log-privacy.php:144
 msgid "Activity"
 msgstr ""
 
 #: admin/class-blt-activity-log-list-table.php:59
-#: includes/class-blt-activity-log-privacy.php:146
+#: includes/class-blt-activity-log-privacy.php:148
 msgid "Item"
 msgstr ""
 
@@ -279,7 +291,7 @@ msgid "Version"
 msgstr ""
 
 #: admin/views/entry.php:302
-#: includes/class-blt-activity-log-formatter.php:661
+#: includes/class-blt-activity-log-formatter.php:685
 msgid "Scope"
 msgstr ""
 
@@ -328,7 +340,7 @@ msgstr ""
 
 #: admin/views/entry.php:96
 #: admin/views/settings.php:109
-#: includes/class-blt-activity-log-privacy.php:150
+#: includes/class-blt-activity-log-privacy.php:152
 msgid "IP address"
 msgstr ""
 
@@ -346,56 +358,56 @@ msgstr ""
 msgid "BLT Activity Log sections"
 msgstr ""
 
-#: admin/views/log.php:100
+#: admin/views/log.php:103
 msgid "%1$s (%2$s)"
 msgstr ""
 
-#: admin/views/log.php:103
+#: admin/views/log.php:106
 msgid "%s (deleted)"
 msgstr ""
 
-#: admin/views/log.php:110
+#: admin/views/log.php:113
 msgid "Username"
 msgstr ""
 
-#: admin/views/log.php:113
+#: admin/views/log.php:116
 msgid "From date"
 msgstr ""
 
-#: admin/views/log.php:116
+#: admin/views/log.php:119
 msgid "To date"
 msgstr ""
 
-#: admin/views/log.php:119
+#: admin/views/log.php:122
 msgid "Search item names"
 msgstr ""
 
-#: admin/views/log.php:120
+#: admin/views/log.php:123
 msgid "Search items"
 msgstr ""
 
-#: admin/views/log.php:122
+#: admin/views/log.php:125
 msgid "Filter"
 msgstr ""
 
-#: admin/views/log.php:124
+#: admin/views/log.php:127
 msgid "Reset"
 msgstr ""
 
-#: admin/views/log.php:140
+#: admin/views/log.php:143
 msgid "No activity matches these filters"
 msgstr ""
 
-#: admin/views/log.php:141
+#: admin/views/log.php:144
 msgid "Reset the filters"
 msgstr ""
 
-#: admin/views/log.php:145
+#: admin/views/log.php:148
 msgid "Nothing to show yet"
 msgstr ""
 
 #. translators: %s: the date logging started.
-#: admin/views/log.php:154
+#: admin/views/log.php:157
 msgid "Logging started on %s. Changes will appear here as they happen."
 msgstr ""
 
@@ -415,19 +427,19 @@ msgstr[1] ""
 msgid "Export CSV"
 msgstr ""
 
-#: admin/views/log.php:72
+#: admin/views/log.php:75
 msgid "All activity"
 msgstr ""
 
-#: admin/views/log.php:78
+#: admin/views/log.php:81
 msgid "All %s"
 msgstr ""
 
-#: admin/views/log.php:91
+#: admin/views/log.php:94
 msgid "Anyone"
 msgstr ""
 
-#: admin/views/log.php:92
+#: admin/views/log.php:95
 msgid "No user (system, cron, WP-CLI)"
 msgstr ""
 
@@ -567,55 +579,55 @@ msgstr ""
 msgid "Cannot be undone"
 msgstr ""
 
-#: admin/views/settings.php:267
+#: admin/views/settings.php:268
 msgid "%1$s entry older than %2$s will be permanently deleted."
 msgid_plural "%1$s entries older than %2$s will be permanently deleted."
 msgstr[0] ""
 msgstr[1] ""
 
-#: admin/views/settings.php:274
+#: admin/views/settings.php:275
 msgid "All %s entry will be permanently deleted."
 msgid_plural "All %s entries will be permanently deleted."
 msgstr[0] ""
 msgstr[1] ""
 
-#: admin/views/settings.php:280
+#: admin/views/settings.php:281
 msgid "Download a full dump first"
 msgstr ""
 
-#: admin/views/settings.php:280
+#: admin/views/settings.php:281
 msgid "if you may want these entries again."
 msgstr ""
 
-#: admin/views/settings.php:283
+#: admin/views/settings.php:284
 msgid "I understand this cannot be undone."
 msgstr ""
 
-#: admin/views/settings.php:286
+#: admin/views/settings.php:287
 msgid "Delete these entries"
 msgstr ""
 
-#: admin/views/settings.php:287
+#: admin/views/settings.php:288
 msgid "Cancel"
 msgstr ""
 
-#: admin/views/settings.php:293
+#: admin/views/settings.php:294
 msgid "All entries"
 msgstr ""
 
-#: admin/views/settings.php:297
+#: admin/views/settings.php:298
 msgid "Entries older than"
 msgstr ""
 
-#: admin/views/settings.php:298
+#: admin/views/settings.php:299
 msgid "Delete entries older than this date"
 msgstr ""
 
-#: admin/views/settings.php:302
+#: admin/views/settings.php:303
 msgid "Preview what will be deleted"
 msgstr ""
 
-#: admin/views/settings.php:304
+#: admin/views/settings.php:305
 msgid "Nothing is deleted until you confirm on the next screen."
 msgstr ""
 
@@ -632,7 +644,7 @@ msgid "Failed sign-ins"
 msgstr ""
 
 #: admin/views/settings.php:61
-msgid "Off by default: a brute-force attack would flood the log. Locking people out is the job of a security plugin."
+msgid "Off by default: a brute-force attack would flood the log. Locking people out is the job of a security plugin. The username is recorded as typed, and people sometimes type a password into that box."
 msgstr ""
 
 #: admin/views/settings.php:70
@@ -671,807 +683,807 @@ msgstr ""
 msgid "Also catches other plugins' settings forms. Noisier: plugins write options often. Changes by cron and visitors are not logged."
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1006
+#: includes/class-blt-activity-log-formatter.php:1030
 msgid "%1$s created %2$s “%3$s”"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1008
+#: includes/class-blt-activity-log-formatter.php:1032
 msgid "%1$s updated %2$s “%3$s”"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1010
+#: includes/class-blt-activity-log-formatter.php:1034
 msgid "%1$s published %2$s “%3$s”"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1012
+#: includes/class-blt-activity-log-formatter.php:1036
 msgid "%1$s unpublished %2$s “%3$s”"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1014
+#: includes/class-blt-activity-log-formatter.php:1038
 msgid "%1$s scheduled %2$s “%3$s”"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1016
+#: includes/class-blt-activity-log-formatter.php:1040
 msgid "%1$s made %2$s “%3$s” private"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1018
+#: includes/class-blt-activity-log-formatter.php:1042
 msgid "%1$s trashed %2$s “%3$s”"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1020
+#: includes/class-blt-activity-log-formatter.php:1044
 msgid "%1$s restored %2$s “%3$s”"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1022
+#: includes/class-blt-activity-log-formatter.php:1046
 msgid "%1$s deleted %2$s “%3$s”"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1037
+#: includes/class-blt-activity-log-formatter.php:1061
 msgid "%1$s uploaded “%3$s”"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1039
+#: includes/class-blt-activity-log-formatter.php:1063
 msgid "%1$s edited the details of “%3$s”"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1041
+#: includes/class-blt-activity-log-formatter.php:1065
 msgid "%1$s deleted “%3$s”"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1048
+#: includes/class-blt-activity-log-formatter.php:1072
 msgid "%1$s created the menu “%3$s”"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1050
+#: includes/class-blt-activity-log-formatter.php:1074
 msgid "%1$s updated the menu “%3$s”"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1052
+#: includes/class-blt-activity-log-formatter.php:1076
 msgid "%1$s deleted the menu “%3$s”"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1054
+#: includes/class-blt-activity-log-formatter.php:1078
 msgid "%1$s changed menu locations"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1056
+#: includes/class-blt-activity-log-formatter.php:1080
 msgid "%1$s changed widgets"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1058
+#: includes/class-blt-activity-log-formatter.php:1082
 msgid "%1$s changed theme settings"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1061
+#: includes/class-blt-activity-log-formatter.php:1085
 msgid "%1$s installed the plugin “%3$s”"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1063
+#: includes/class-blt-activity-log-formatter.php:1087
 msgid "%1$s updated the plugin “%3$s”"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1065
+#: includes/class-blt-activity-log-formatter.php:1089
 msgid "%1$s activated the plugin “%3$s”"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1067
+#: includes/class-blt-activity-log-formatter.php:1091
 msgid "%1$s deactivated the plugin “%3$s”"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1069
+#: includes/class-blt-activity-log-formatter.php:1093
 msgid "%1$s deleted the plugin “%3$s”"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1071
-#: includes/class-blt-activity-log-formatter.php:1086
+#: includes/class-blt-activity-log-formatter.php:1095
+#: includes/class-blt-activity-log-formatter.php:1110
 msgid "%1$s turned on auto-updates for “%3$s”"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1073
-#: includes/class-blt-activity-log-formatter.php:1088
+#: includes/class-blt-activity-log-formatter.php:1097
+#: includes/class-blt-activity-log-formatter.php:1112
 msgid "%1$s turned off auto-updates for “%3$s”"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1075
+#: includes/class-blt-activity-log-formatter.php:1099
 msgid "The plugin “%3$s” changed outside WordPress"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1078
+#: includes/class-blt-activity-log-formatter.php:1102
 msgid "%1$s installed the theme “%3$s”"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1080
+#: includes/class-blt-activity-log-formatter.php:1104
 msgid "%1$s updated the theme “%3$s”"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1082
+#: includes/class-blt-activity-log-formatter.php:1106
 msgid "%1$s switched to the theme “%3$s”"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1084
+#: includes/class-blt-activity-log-formatter.php:1108
 msgid "%1$s deleted the theme “%3$s”"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1090
+#: includes/class-blt-activity-log-formatter.php:1114
 msgid "The theme “%3$s” changed outside WordPress"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1093
+#: includes/class-blt-activity-log-formatter.php:1117
 msgid "%1$s updated WordPress"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1094
+#: includes/class-blt-activity-log-formatter.php:1118
 msgid "WordPress changed outside WordPress itself"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1097
+#: includes/class-blt-activity-log-formatter.php:1121
 msgid "%1$s changed the setting “%3$s”"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1099
+#: includes/class-blt-activity-log-formatter.php:1123
 msgid "%1$s deleted the setting “%3$s”"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1101
+#: includes/class-blt-activity-log-formatter.php:1125
 msgid "%1$s requested a change of the administration email address"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1104
+#: includes/class-blt-activity-log-formatter.php:1128
 msgid "%1$s created the user “%3$s”"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1106
+#: includes/class-blt-activity-log-formatter.php:1130
 msgid "%1$s updated the user “%3$s”"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1108
+#: includes/class-blt-activity-log-formatter.php:1132
 msgid "The password of “%3$s” was changed"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1110
+#: includes/class-blt-activity-log-formatter.php:1134
 msgid "The password of “%3$s” was reset"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1112
+#: includes/class-blt-activity-log-formatter.php:1136
 msgid "%1$s changed the role of “%3$s”"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1114
+#: includes/class-blt-activity-log-formatter.php:1138
 msgid "%1$s deleted the user “%3$s”"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1116
+#: includes/class-blt-activity-log-formatter.php:1140
 msgid "%1$s created an application password for “%3$s”"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1118
+#: includes/class-blt-activity-log-formatter.php:1142
 msgid "%1$s revoked an application password for “%3$s”"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1121
+#: includes/class-blt-activity-log-formatter.php:1145
 msgid "%1$s signed in"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1123
+#: includes/class-blt-activity-log-formatter.php:1147
 msgid "%1$s signed out"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1125
+#: includes/class-blt-activity-log-formatter.php:1149
 msgid "A sign-in failed for “%3$s”"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1128
+#: includes/class-blt-activity-log-formatter.php:1152
 msgid "Logging started (%1$s)"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1130
+#: includes/class-blt-activity-log-formatter.php:1154
 msgid "%1$s cleared the log"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1132
+#: includes/class-blt-activity-log-formatter.php:1156
 msgid "%1$s exported the log"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1213
+#: includes/class-blt-activity-log-formatter.php:1237
 msgid "Added %1$s, removed %2$s"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1218
+#: includes/class-blt-activity-log-formatter.php:1242
 msgid "Added %s"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:1223
+#: includes/class-blt-activity-log-formatter.php:1247
 msgid "Removed %s"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:282
+#: includes/class-blt-activity-log-formatter.php:306
 msgid "%s ago"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:292
-#: includes/class-blt-activity-log-module-posts.php:91
+#: includes/class-blt-activity-log-formatter.php:316
+#: includes/class-blt-activity-log-module-posts.php:115
 msgid "Posts & pages"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:293
+#: includes/class-blt-activity-log-formatter.php:317
 #: includes/class-blt-activity-log-module-media.php:45
 msgid "Media"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:294
+#: includes/class-blt-activity-log-formatter.php:318
 #: includes/class-blt-activity-log-module-terms.php:49
 msgid "Categories & tags"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:295
-#: includes/class-blt-activity-log-module-appearance.php:55
+#: includes/class-blt-activity-log-formatter.php:319
+#: includes/class-blt-activity-log-module-appearance.php:62
 msgid "Menus, widgets & Customizer"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:296
+#: includes/class-blt-activity-log-formatter.php:320
 #: includes/class-blt-activity-log-module-plugins.php:40
 msgid "Plugins"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:297
+#: includes/class-blt-activity-log-formatter.php:321
 #: includes/class-blt-activity-log-module-themes.php:37
 msgid "Themes"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:298
+#: includes/class-blt-activity-log-formatter.php:322
 #: includes/class-blt-activity-log-module-core.php:29
 msgid "WordPress updates"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:300
+#: includes/class-blt-activity-log-formatter.php:324
 #: includes/class-blt-activity-log-module-users.php:49
 msgid "Users"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:301
+#: includes/class-blt-activity-log-formatter.php:325
 #: includes/class-blt-activity-log-module-sessions.php:37
 msgid "Sign-ins"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:303
+#: includes/class-blt-activity-log-formatter.php:327
 msgid "Other"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:335
+#: includes/class-blt-activity-log-formatter.php:359
 msgid "Created"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:336
+#: includes/class-blt-activity-log-formatter.php:360
 msgid "Updated"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:337
+#: includes/class-blt-activity-log-formatter.php:361
 msgid "Deleted"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:338
+#: includes/class-blt-activity-log-formatter.php:362
 msgid "Installed"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:339
+#: includes/class-blt-activity-log-formatter.php:363
 msgid "Auto-updates enabled"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:340
+#: includes/class-blt-activity-log-formatter.php:364
 msgid "Auto-updates disabled"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:341
+#: includes/class-blt-activity-log-formatter.php:365
 msgid "Changed outside WordPress"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:347
+#: includes/class-blt-activity-log-formatter.php:371
 msgid "Published"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:348
+#: includes/class-blt-activity-log-formatter.php:372
 msgid "Unpublished"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:349
+#: includes/class-blt-activity-log-formatter.php:373
 msgid "Scheduled"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:350
+#: includes/class-blt-activity-log-formatter.php:374
 msgid "Made private"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:351
+#: includes/class-blt-activity-log-formatter.php:375
 msgid "Trashed"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:352
+#: includes/class-blt-activity-log-formatter.php:376
 msgid "Restored"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:356
+#: includes/class-blt-activity-log-formatter.php:380
 msgid "Uploaded"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:366
+#: includes/class-blt-activity-log-formatter.php:390
 msgid "Menu created"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:367
+#: includes/class-blt-activity-log-formatter.php:391
 msgid "Menu updated"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:368
+#: includes/class-blt-activity-log-formatter.php:392
 msgid "Menu deleted"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:369
+#: includes/class-blt-activity-log-formatter.php:393
 msgid "Menu locations changed"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:370
+#: includes/class-blt-activity-log-formatter.php:394
 msgid "Widgets changed"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:371
+#: includes/class-blt-activity-log-formatter.php:395
 msgid "Customizer published"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:376
+#: includes/class-blt-activity-log-formatter.php:400
 msgid "Activated"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:377
+#: includes/class-blt-activity-log-formatter.php:401
 msgid "Deactivated"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:386
+#: includes/class-blt-activity-log-formatter.php:410
 msgid "Switched"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:399
+#: includes/class-blt-activity-log-formatter.php:423
 msgid "Admin email change requested"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:404
+#: includes/class-blt-activity-log-formatter.php:428
 msgid "Password changed"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:405
+#: includes/class-blt-activity-log-formatter.php:429
 msgid "Password reset"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:406
+#: includes/class-blt-activity-log-formatter.php:430
 msgid "Role changed"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:408
+#: includes/class-blt-activity-log-formatter.php:432
 msgid "Application password created"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:409
+#: includes/class-blt-activity-log-formatter.php:433
 msgid "Application password revoked"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:412
+#: includes/class-blt-activity-log-formatter.php:436
 msgid "Signed in"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:413
+#: includes/class-blt-activity-log-formatter.php:437
 msgid "Signed out"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:414
+#: includes/class-blt-activity-log-formatter.php:438
 msgid "Failed sign-in"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:417
+#: includes/class-blt-activity-log-formatter.php:441
 msgid "Logging started"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:418
+#: includes/class-blt-activity-log-formatter.php:442
 msgid "Log cleared"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:419
+#: includes/class-blt-activity-log-formatter.php:443
 msgid "Exported"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:453
+#: includes/class-blt-activity-log-formatter.php:477
 msgid "System"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:453
-#: includes/class-blt-activity-log-formatter.php:486
-#: includes/class-blt-activity-log-formatter.php:865
+#: includes/class-blt-activity-log-formatter.php:477
+#: includes/class-blt-activity-log-formatter.php:510
+#: includes/class-blt-activity-log-formatter.php:889
 msgid "WP-CLI"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:487
+#: includes/class-blt-activity-log-formatter.php:511
 msgid "WP-Cron"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:488
+#: includes/class-blt-activity-log-formatter.php:512
 msgid "REST API"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:489
+#: includes/class-blt-activity-log-formatter.php:513
 msgid "AJAX"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:490
+#: includes/class-blt-activity-log-formatter.php:514
 msgid "XML-RPC"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:491
+#: includes/class-blt-activity-log-formatter.php:515
 msgid "Sign-in page"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:492
+#: includes/class-blt-activity-log-formatter.php:516
 msgid "Admin screen"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:493
+#: includes/class-blt-activity-log-formatter.php:517
 msgid "Front end"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:516
+#: includes/class-blt-activity-log-formatter.php:540
 msgid "file"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:528
+#: includes/class-blt-activity-log-formatter.php:552
 msgid "plugin"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:529
+#: includes/class-blt-activity-log-formatter.php:553
 msgid "theme"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:530
+#: includes/class-blt-activity-log-formatter.php:554
 msgid "WordPress"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:531
+#: includes/class-blt-activity-log-formatter.php:555
 msgid "user"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:532
+#: includes/class-blt-activity-log-formatter.php:556
 msgid "setting"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:533
+#: includes/class-blt-activity-log-formatter.php:557
 msgid "menu"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:534
+#: includes/class-blt-activity-log-formatter.php:558
 msgid "widgets"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:535
+#: includes/class-blt-activity-log-formatter.php:559
 msgid "theme settings"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:557
+#: includes/class-blt-activity-log-formatter.php:581
 msgid "Widgets"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:571
+#: includes/class-blt-activity-log-formatter.php:595
 msgid "(no title)"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:597
+#: includes/class-blt-activity-log-formatter.php:621
 msgid "%1$s: %2$s %3$s"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:603
+#: includes/class-blt-activity-log-formatter.php:627
 msgid "%s registered an account"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:620
-#: includes/class-blt-activity-log-formatter.php:632
+#: includes/class-blt-activity-log-formatter.php:644
+#: includes/class-blt-activity-log-formatter.php:656
 msgid "Title"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:621
-#: includes/class-blt-activity-log-formatter.php:641
+#: includes/class-blt-activity-log-formatter.php:645
+#: includes/class-blt-activity-log-formatter.php:665
 msgid "Slug"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:622
+#: includes/class-blt-activity-log-formatter.php:646
 msgid "Status"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:623
+#: includes/class-blt-activity-log-formatter.php:647
 msgid "Author"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:624
-#: includes/class-blt-activity-log-formatter.php:642
+#: includes/class-blt-activity-log-formatter.php:648
+#: includes/class-blt-activity-log-formatter.php:666
 msgid "Parent"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:625
+#: includes/class-blt-activity-log-formatter.php:649
 msgid "Order"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:626
+#: includes/class-blt-activity-log-formatter.php:650
 msgid "Excerpt"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:627
+#: includes/class-blt-activity-log-formatter.php:651
 msgid "Comments"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:628
+#: includes/class-blt-activity-log-formatter.php:652
 msgid "Pingbacks"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:629
+#: includes/class-blt-activity-log-formatter.php:653
 msgid "Password"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:630
+#: includes/class-blt-activity-log-formatter.php:654
 msgid "Date"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:633
+#: includes/class-blt-activity-log-formatter.php:657
 msgid "Caption"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:634
+#: includes/class-blt-activity-log-formatter.php:658
 msgid "Description"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:635
+#: includes/class-blt-activity-log-formatter.php:659
 msgid "Alt text"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:636
+#: includes/class-blt-activity-log-formatter.php:660
 msgid "File"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:637
+#: includes/class-blt-activity-log-formatter.php:661
 msgid "File type"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:638
+#: includes/class-blt-activity-log-formatter.php:662
 msgid "File size"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:640
+#: includes/class-blt-activity-log-formatter.php:664
 msgid "Name"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:644
+#: includes/class-blt-activity-log-formatter.php:668
 msgid "Email"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:645
+#: includes/class-blt-activity-log-formatter.php:669
 msgid "Display name"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:646
+#: includes/class-blt-activity-log-formatter.php:670
 msgid "Profile URL name"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:647
+#: includes/class-blt-activity-log-formatter.php:671
 msgid "Website"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:648
+#: includes/class-blt-activity-log-formatter.php:672
 msgid "First name"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:649
+#: includes/class-blt-activity-log-formatter.php:673
 msgid "Last name"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:650
+#: includes/class-blt-activity-log-formatter.php:674
 msgid "Nickname"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:651
+#: includes/class-blt-activity-log-formatter.php:675
 msgid "Role"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:652
+#: includes/class-blt-activity-log-formatter.php:676
 msgid "Content reassigned to"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:653
+#: includes/class-blt-activity-log-formatter.php:677
 msgid "Application"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:655
+#: includes/class-blt-activity-log-formatter.php:679
 msgid "Menu items"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:656
+#: includes/class-blt-activity-log-formatter.php:680
 msgid "Menu name"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:657
+#: includes/class-blt-activity-log-formatter.php:681
 msgid "Theme"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:659
+#: includes/class-blt-activity-log-formatter.php:683
 msgid "Entries removed"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:660
+#: includes/class-blt-activity-log-formatter.php:684
 msgid "Entries exported"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:662
+#: includes/class-blt-activity-log-formatter.php:686
 msgid "Filters"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:664
+#: includes/class-blt-activity-log-formatter.php:688
 msgid "Site title"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:665
+#: includes/class-blt-activity-log-formatter.php:689
 msgid "Tagline"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:666
+#: includes/class-blt-activity-log-formatter.php:690
 msgid "Site icon"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:667
+#: includes/class-blt-activity-log-formatter.php:691
 msgid "WordPress address"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:668
+#: includes/class-blt-activity-log-formatter.php:692
 msgid "Site address"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:669
+#: includes/class-blt-activity-log-formatter.php:693
 msgid "Administration email address"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:670
+#: includes/class-blt-activity-log-formatter.php:694
 msgid "New administration email address"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:671
+#: includes/class-blt-activity-log-formatter.php:695
 msgid "Anyone can register"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:672
+#: includes/class-blt-activity-log-formatter.php:696
 msgid "New user default role"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:673
+#: includes/class-blt-activity-log-formatter.php:697
 msgid "Timezone"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:674
+#: includes/class-blt-activity-log-formatter.php:698
 msgid "Timezone offset"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:675
+#: includes/class-blt-activity-log-formatter.php:699
 msgid "Date format"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:676
+#: includes/class-blt-activity-log-formatter.php:700
 msgid "Time format"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:677
+#: includes/class-blt-activity-log-formatter.php:701
 msgid "Week starts on"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:678
+#: includes/class-blt-activity-log-formatter.php:702
 msgid "Site language"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:679
+#: includes/class-blt-activity-log-formatter.php:703
 msgid "Your homepage displays"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:680
+#: includes/class-blt-activity-log-formatter.php:704
 msgid "Homepage"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:681
+#: includes/class-blt-activity-log-formatter.php:705
 msgid "Posts page"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:682
+#: includes/class-blt-activity-log-formatter.php:706
 msgid "Blog pages show at most"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:683
+#: includes/class-blt-activity-log-formatter.php:707
 msgid "Search engine visibility"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:684
+#: includes/class-blt-activity-log-formatter.php:708
 msgid "Permalink structure"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:685
+#: includes/class-blt-activity-log-formatter.php:709
 msgid "Category base"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:686
+#: includes/class-blt-activity-log-formatter.php:710
 msgid "Tag base"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:687
+#: includes/class-blt-activity-log-formatter.php:711
 msgid "Allow comments on new posts"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:688
+#: includes/class-blt-activity-log-formatter.php:712
 msgid "Comments must be manually approved"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:689
+#: includes/class-blt-activity-log-formatter.php:713
 msgid "Privacy policy page"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:690
+#: includes/class-blt-activity-log-formatter.php:714
 msgid "Mail server password"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:701
+#: includes/class-blt-activity-log-formatter.php:725
 msgid "Custom field “%s”"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:704
+#: includes/class-blt-activity-log-formatter.php:728
 msgid "Menu location “%s”"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:707
+#: includes/class-blt-activity-log-formatter.php:731
 msgid "Widget area “%s”"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:710
+#: includes/class-blt-activity-log-formatter.php:734
 msgid "Theme setting “%s”"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:755
+#: includes/class-blt-activity-log-formatter.php:779
 msgid "Closed"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:755
+#: includes/class-blt-activity-log-formatter.php:779
 msgid "Open"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:800
+#: includes/class-blt-activity-log-formatter.php:824
 msgid "+%d more"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:862
+#: includes/class-blt-activity-log-formatter.php:886
 msgid "from the admin screen"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:863
+#: includes/class-blt-activity-log-formatter.php:887
 msgid "uploaded"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:864
+#: includes/class-blt-activity-log-formatter.php:888
 msgid "automatic"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:866
+#: includes/class-blt-activity-log-formatter.php:890
 msgid "outside WordPress"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:887
-#: includes/class-blt-activity-log-formatter.php:892
+#: includes/class-blt-activity-log-formatter.php:911
+#: includes/class-blt-activity-log-formatter.php:916
 msgid "%d block"
 msgid_plural "%d blocks"
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-blt-activity-log-formatter.php:895
+#: includes/class-blt-activity-log-formatter.php:919
 msgid "content"
 msgstr ""
 
-#: includes/class-blt-activity-log-formatter.php:913
-#: includes/class-blt-activity-log-formatter.php:918
+#: includes/class-blt-activity-log-formatter.php:937
+#: includes/class-blt-activity-log-formatter.php:942
 msgid "%d element"
 msgid_plural "%d elements"
 msgstr[0] ""
@@ -1481,7 +1493,7 @@ msgstr[1] ""
 msgid "BLT Activity Log cannot be network activated. Activate it on each site you want to log, from that site's Plugins screen."
 msgstr ""
 
-#: includes/class-blt-activity-log-module-appearance.php:62
+#: includes/class-blt-activity-log-module-appearance.php:69
 msgid "Navigation menus, menu locations, widgets and theme settings changed in the Customizer."
 msgstr ""
 
@@ -1497,7 +1509,7 @@ msgstr ""
 msgid "Plugins installed, updated, activated, deactivated or deleted."
 msgstr ""
 
-#: includes/class-blt-activity-log-module-posts.php:98
+#: includes/class-blt-activity-log-module-posts.php:122
 msgid "Content created, edited, published, scheduled, trashed, restored or deleted, with the fields that changed."
 msgstr ""
 
@@ -1525,16 +1537,16 @@ msgstr ""
 msgid "Accounts created, edited or deleted, role changes, password changes and application passwords."
 msgstr ""
 
-#: includes/class-blt-activity-log-privacy.php:138
+#: includes/class-blt-activity-log-privacy.php:140
 msgid "Time"
 msgstr ""
 
-#: includes/class-blt-activity-log-privacy.php:203
+#: includes/class-blt-activity-log-privacy.php:205
 msgid "Activity log entries are kept as a record of site security. The IP address and browser were removed from them."
 msgstr ""
 
 #: includes/class-blt-activity-log-privacy.php:50
-#: includes/class-blt-activity-log-privacy.php:134
+#: includes/class-blt-activity-log-privacy.php:136
 msgid "Activity log"
 msgstr ""
 
@@ -1546,25 +1558,37 @@ msgstr ""
 msgid "We keep a record of changes made to this site: content, plugins, themes, settings and user accounts, and when people sign in. Each record notes who made the change, when, and from which screen."
 msgstr ""
 
-#: includes/class-blt-activity-log-privacy.php:55
-msgid "The record does not include IP addresses."
+#: includes/class-blt-activity-log-privacy.php:57
+msgid "The record does not include IP addresses or the browser used."
 msgstr ""
 
 #: includes/class-blt-activity-log-privacy.php:57
+msgid "The record does not include IP addresses. It does include the browser used."
+msgstr ""
+
+#: includes/class-blt-activity-log-privacy.php:59
 msgid "The record includes IP addresses with their last part removed, and the browser used."
 msgstr ""
 
 #: includes/class-blt-activity-log-privacy.php:59
+msgid "The record includes IP addresses with their last part removed. It does not include the browser used."
+msgstr ""
+
+#: includes/class-blt-activity-log-privacy.php:61
 msgid "The record includes the IP address and the browser used."
 msgstr ""
 
+#: includes/class-blt-activity-log-privacy.php:61
+msgid "The record includes the IP address. It does not include the browser used."
+msgstr ""
+
 #. translators: %d: number of days entries are kept.
-#: includes/class-blt-activity-log-privacy.php:65
+#: includes/class-blt-activity-log-privacy.php:67
 msgid "Entries are deleted automatically after %d day."
 msgid_plural "Entries are deleted automatically after %d days."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-blt-activity-log.php:138
+#: includes/class-blt-activity-log.php:139
 msgid "BLT Activity Log does not support network activation, so it is not recording anything. Deactivate it for the network and activate it on each site you want to log."
 msgstr ""

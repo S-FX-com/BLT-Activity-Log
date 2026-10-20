@@ -93,10 +93,8 @@ class BLT_Activity_Log_List_Table extends WP_List_Table {
 		$per_page = max( 1, min( BLT_Activity_Log_Query::MAX_PER_PAGE, (int) $this->get_items_per_page( BLT_Activity_Log_Admin::PER_PAGE_OPTION, BLT_Activity_Log_Query::DEFAULT_PER_PAGE ) ) );
 
 		$this->args['per_page'] = $per_page;
-		$this->args['paged']    = max( 1, (int) $this->get_pagenum() );
 
 		$this->_column_headers = array( $this->get_columns(), array(), $this->get_sortable_columns(), 'item' );
-		$this->items           = BLT_Activity_Log_Query::find( $this->args );
 
 		$this->set_pagination_args(
 			array(
@@ -104,6 +102,10 @@ class BLT_Activity_Log_List_Table extends WP_List_Table {
 				'per_page'    => $per_page,
 			)
 		);
+
+		// Only now is the page number held to the last page, so a number past the end shows the last page.
+		$this->args['paged'] = max( 1, (int) $this->get_pagenum() );
+		$this->items         = BLT_Activity_Log_Query::find( $this->args );
 	}
 
 	/**

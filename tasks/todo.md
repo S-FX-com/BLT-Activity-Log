@@ -4,7 +4,7 @@ Phase checklists with acceptance criteria (moved here from `CLAUDE.md` Appendix 
 
 Legend: `[x]` done and verified; `[ ]` open. Where a check could not be made in the build environment, it says what was done instead and what is still owed.
 
-**How things were verified.** Unit tests (`composer test`, no WordPress needed) cover the pure classes against known vectors. The WordPress-coupled behavior was exercised against a real WordPress 7.1.3 install (SQLite, one PHP process per request, real auth cookies, real `admin.php`, `admin-post.php` and `index.php` entry points, and Chromium for the screens) by scripts that are not part of the repository. What that setup cannot show, and so remains owed on a staging site: real MySQL or MariaDB, multisite, the WordPress 6.0 floor at run time, a real WordPress.org update download, and a shared host.
+**How things were verified.** Unit tests (`composer test`, no WordPress needed) cover the pure classes against known vectors. The WordPress-coupled behavior was exercised against a real WordPress 7.1.3 install (SQLite, one PHP process per request, real auth cookies, real `admin.php`, `admin-post.php` and `index.php` entry points, and Chromium for the screens) by scripts that are not part of the repository (fourteen suites, about 600 assertions at the last full run, all passing; the scripts and the site live in the build session's scratch space, so a fresh checkout cannot re-run them until they are moved under `tests/integration/`). What that setup cannot show, and so remains owed on a staging site: real MySQL or MariaDB, multisite, the WordPress 6.0 floor at run time, a real WordPress.org update download, and a shared host.
 
 ## Phase 0: Scaffold
 - [x] Layout per CONVENTIONS 5; `DESIGN.md`, `CONVENTIONS.md`, `includes/blt-family/` and plugin-update-checker v5p7 vendored byte-identical (checked with `cmp` against BLT Secure).
@@ -71,6 +71,16 @@ Legend: `[x]` done and verified; `[ ]` open. Where a check could not be made in 
 - [ ] Clean install from the release zip, then a second release to prove the update path.
 - [ ] Shared-host pass (no `exec()`, WP-Cron only), a `DISALLOW_FILE_MODS` / Bedrock site, keyboard-only pass of all admin screens.
 - [ ] CONVENTIONS 14.5 checklist complete; release published by CI.
+
+## Review rounds
+- [x] Round 2: four independent reviewers read the committed code with no knowledge of each other's findings. Each report was traced or reproduced before anything was changed; the fixes and their tests are summarized in `tasks/lessons.md` ("Third review round") and `CHANGELOG.md`. Unit suite and all fourteen integration suites pass.
+- [x] Declined, with reasons:
+  - **Migrating a stored retention of 0.** This is an unreleased plugin: nothing has stored one. A configured or stored 0 already reads as the 90-day default.
+  - **A size limit on the full dump.** It is `manage_options` only, streamed in batches of 250 and bounded to the newest id at the start, so memory stays flat; a cap would defeat its purpose (keeping a complete copy).
+  - **A failed-login username that is really a password.** The spec records the attempted username; the setting is off by default and says so beside the toggle.
+  - **Multisite `update_site_option` misses.** Multisite is deferred and network activation refused.
+- [ ] Known limitation, documented in `README.md` and `CLAUDE.md` 6.3: a Customizer or REST edit that changes only menu items may not produce a `menu_updated` entry (it fires only when the menu itself is saved).
+- [ ] Move the integration scripts into `tests/integration/` so they run from the repository (offered to the owner; not done without asking).
 
 ## Open decisions (also in CLAUDE.md section 12)
 - [ ] Add BLT Activity Log to the family list in `DESIGN.md` and port that change to every repo in the same pass (CONVENTIONS 16.1 step 7). `DESIGN.md` is vendored, so it is not edited here alone.

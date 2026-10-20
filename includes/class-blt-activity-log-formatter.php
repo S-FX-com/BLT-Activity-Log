@@ -162,6 +162,11 @@ class BLT_Activity_Log_Formatter {
 				}
 			}
 
+			// What happened to a value that is never stored (a password: set, changed or removed).
+			if ( isset( $change['note'] ) && is_scalar( $change['note'] ) ) {
+				$item['note'] = (string) $change['note'];
+			}
+
 			if ( isset( $change['truncated'] ) && is_array( $change['truncated'] ) ) {
 				$item['truncated'] = array_map( 'intval', array_filter( $change['truncated'], 'is_numeric' ) );
 			}
@@ -263,6 +268,25 @@ class BLT_Activity_Log_Formatter {
 		}
 
 		return wp_date( $format, $timestamp );
+	}
+
+	/**
+	 * A time that is already in the site's timezone, formatted the way the site formats times.
+	 *
+	 * `post_date` is stored as site-local time, unlike every `created_at`, so it
+	 * must not go through the UTC conversion in `site_time()`.
+	 *
+	 * @param string $local `Y-m-d H:i:s` in the site's timezone.
+	 * @return string The input unchanged when it is not a date.
+	 */
+	public static function local_time( $local ) {
+		try {
+			$date = new DateTimeImmutable( (string) $local, BLT_Activity_Log_Query::timezone() );
+		} catch ( \Exception $e ) {
+			return (string) $local;
+		}
+
+		return wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $date->getTimestamp() );
 	}
 
 	/**
@@ -755,7 +779,7 @@ class BLT_Activity_Log_Formatter {
 				return 'open' === $value ? __( 'Open', 'blt-activity-log' ) : ( 'closed' === $value ? __( 'Closed', 'blt-activity-log' ) : $value );
 
 			case 'post_date':
-				return self::site_time( $value );
+				return self::local_time( $value );
 		}
 
 		return $value;

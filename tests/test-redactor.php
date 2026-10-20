@@ -39,6 +39,20 @@ class Test_Redactor extends TestCase {
 			'dashed'                                => array( 'private-key' ),
 			'nested path, second level'             => array( 'option[group][client_secret]' ),
 			'always list inside a path'             => array( 'meta[session_tokens]' ),
+			'camelCase: accessToken'                => array( 'accessToken' ),
+			'camelCase: clientSecret'               => array( 'clientSecret' ),
+			'camelCase: secretKey'                  => array( 'secretKey' ),
+			'camelCase: apiKey'                     => array( 'apiKey' ),
+			'dotted: smtp.password'                 => array( 'smtp.password' ),
+			'spaced: Client Secret'                 => array( 'Client Secret' ),
+			'plural: passwords'                     => array( 'passwords' ),
+			'plural: api_keys'                      => array( 'api_keys' ),
+			'plural: tokens'                        => array( 'tokens' ),
+			'WordPress key: nonce_key'              => array( 'nonce_key' ),
+			'WordPress key: logged_in_key'          => array( 'logged_in_key' ),
+			'WordPress key: secure_auth_key'        => array( 'secure_auth_key' ),
+			'WordPress salt: logged_in_salt'        => array( 'logged_in_salt' ),
+			'camelCase inside a path'               => array( 'option[smtp][authPassword]' ),
 		);
 	}
 
@@ -55,6 +69,11 @@ class Test_Redactor extends TestCase {
 			'posts_per_page'     => array( 'posts_per_page' ),
 			'tokenizer'          => array( 'tokenizer' ),
 			'blogname'           => array( 'blogname' ),
+			'author_key'         => array( 'author_key' ),
+			'keyword'            => array( 'keyword' ),
+			'password_hint_text' => array( 'passwordless_login' ),
+			'camelCase, ordinary' => array( 'showAvatars' ),
+			'nonce_count'        => array( 'nonce_count' ),
 			'empty'              => array( '' ),
 		);
 	}
@@ -331,5 +350,32 @@ class Test_Redactor extends TestCase {
 		);
 
 		$this->assertSame( array( 'summary' => '42' ), $clean );
+	}
+
+	/**
+	 * A value cut twice (once at 1,000, again by the size cap at 200) still says how long it really was.
+	 *
+	 * @return void
+	 */
+	public function test_the_original_length_survives_a_second_cut() {
+		$long = str_repeat( 'x', 4210 );
+
+		$first = BLT_Activity_Log_Redactor::sanitize_changes(
+			array(
+				array(
+					'field'  => 'post_excerpt',
+					'before' => $long,
+					'after'  => 'short',
+				),
+			),
+			1000
+		);
+
+		$this->assertSame( 4210, $first[0]['truncated']['before'] );
+
+		$second = BLT_Activity_Log_Redactor::sanitize_changes( $first, 200 );
+
+		$this->assertSame( 200, mb_strlen( $second[0]['before'] ) );
+		$this->assertSame( 4210, $second[0]['truncated']['before'], 'Not 1,000, which is only what the first cut left.' );
 	}
 }

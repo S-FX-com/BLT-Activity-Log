@@ -62,6 +62,9 @@ $blt_user_text  = 0 === strpos( (string) $args['user'], 'login:' ) ? substr( $ar
 
 		<form method="get" action="<?php echo esc_url( admin_url( 'tools.php' ) ); ?>" class="blt-toolbar blt-activity-log-filters">
 			<input type="hidden" name="page" value="<?php echo esc_attr( BLT_Activity_Log_Admin::MENU_SLUG ); ?>" />
+			<?php if ( '' !== $args['item'] ) : ?>
+				<input type="hidden" name="item" value="<?php echo esc_attr( $args['item'] ); ?>" />
+			<?php endif; ?>
 			<?php if ( isset( $state['orderby'] ) ) : ?>
 				<input type="hidden" name="orderby" value="<?php echo esc_attr( $state['orderby'] ); ?>" />
 				<input type="hidden" name="order" value="<?php echo esc_attr( $state['order'] ); ?>" />

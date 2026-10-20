@@ -45,7 +45,31 @@ class BLT_Activity_Log_Module_Posts extends BLT_Activity_Log_Module_Base {
 	/**
 	 * Types never covered: they have a module of their own, or are not content.
 	 */
-	const EXCLUDED_TYPES = array( 'attachment', 'nav_menu_item', 'revision', 'customize_changeset', 'oembed_cache', 'user_request' );
+	const EXCLUDED_TYPES = array(
+		'attachment',
+		'nav_menu_item',
+		'revision',
+		'customize_changeset',
+		'oembed_cache',
+		'user_request',
+		// Not content: WooCommerce orders and ACF field definitions are non-goals (CLAUDE.md section 11).
+		// A site that wants them back adds them with the blt_activity_log_post_types filter.
+		'shop_order',
+		'shop_order_placehold',
+		'shop_order_refund',
+		'acf-field-group',
+		'acf-field',
+		'acf-post-type',
+		'acf-taxonomy',
+		'acf-ui-options-page',
+	);
+
+	/**
+	 * Relationships added in this request, by `{object}:{taxonomy}`, so an append can tell what was new.
+	 *
+	 * @var array<string,int[]>
+	 */
+	private $new_relationships = array();
 
 	/**
 	 * Private meta keys tracked besides every public key.
@@ -111,6 +135,7 @@ class BLT_Activity_Log_Module_Posts extends BLT_Activity_Log_Module_Base {
 	public function register() {
 		$this->listen( 'wp_after_insert_post', 'on_after_insert', 20, 4 );
 		$this->listen( 'before_delete_post', 'on_before_delete', 10, 2 );
+		$this->listen( 'added_term_relationship', 'on_term_relationship', 10, 3 );
 		$this->listen( 'set_object_terms', 'on_terms', 10, 6 );
 		$this->listen( 'update_post_meta', 'on_meta_before', 10, 4 );
 		$this->listen( 'delete_post_meta', 'on_meta_before_delete', 10, 4 );
@@ -140,8 +165,9 @@ class BLT_Activity_Log_Module_Posts extends BLT_Activity_Log_Module_Base {
 		$types = apply_filters( 'blt_activity_log_post_types', array_values( array_unique( $types ) ) );
 		$types = is_array( $types ) ? array_values( $types ) : array();
 
-		// Types register on `init`; an answer given earlier would be partial.
-		if ( did_action( 'init' ) ) {
+		// Types register on `init`. Until it has finished (`wp_loaded`), an answer would be partial and
+		// must not be kept for the rest of the request.
+		if ( did_action( 'wp_loaded' ) ) {
 			self::$types = $types;
 		}
 
@@ -279,22 +305,32 @@ class BLT_Activity_Log_Module_Posts extends BLT_Activity_Log_Module_Base {
 	public function on_terms( $object_id, $terms = array(), $tt_ids = array(), $taxonomy = '', $append = false, $old_tt_ids = array() ) {
 		unset( $terms );
 
-		if ( $this->is_front_request() ) {
+		$relationships = isset( $this->new_relationships[ $object_id . ':' . $taxonomy ] ) ? $this->new_relationships[ $object_id . ':' . $taxonomy ] : array();
+
+		unset( $this->new_relationships[ $object_id . ':' . $taxonomy ] );
+
+		if ( $this->is_front_request() || $this->is_autosave() ) {
 			return;
 		}
 
 		$post = $this->loggable_post( $object_id );
 
-		if ( ! $post || isset( $this->deleting[ (int) $object_id ] ) ) {
+		// Another kind of object can share the number (a user, say, with a member type).
+		if ( ! $post || isset( $this->deleting[ (int) $object_id ] ) || ! is_object_in_taxonomy( $post->post_type, (string) $taxonomy ) ) {
 			return;
 		}
 
 		$old_value = array_map( 'intval', (array) $old_tt_ids );
 		$set       = array_map( 'intval', (array) $tt_ids );
-		$new_value = $append ? array_values( array_unique( array_merge( $old_value, $set ) ) ) : $set;
 
-		$added   = array_diff( $new_value, $old_value );
-		$removed = array_diff( $old_value, $new_value );
+		if ( $append ) {
+			// WordPress hands over no "before" when appending; what it actually attached is what is new.
+			$added   = array_values( array_intersect( $set, $relationships ) );
+			$removed = array();
+		} else {
+			$added   = array_diff( $set, $old_value );
+			$removed = array_diff( $old_value, $set );
+		}
 
 		if ( empty( $added ) && empty( $removed ) ) {
 			return;
@@ -311,6 +347,27 @@ class BLT_Activity_Log_Module_Posts extends BLT_Activity_Log_Module_Base {
 				),
 			)
 		);
+	}
+
+	/**
+	 * A term was attached to an object that did not have it.
+	 *
+	 * @param int    $object_id Object ID.
+	 * @param int    $tt_id     Term taxonomy ID.
+	 * @param string $taxonomy  Taxonomy.
+	 * @return void
+	 */
+	public function on_term_relationship( $object_id, $tt_id = 0, $taxonomy = '' ) {
+		$this->new_relationships[ $object_id . ':' . $taxonomy ][] = (int) $tt_id;
+	}
+
+	/**
+	 * Whether this request is an autosave, which is never logged.
+	 *
+	 * @return bool
+	 */
+	private function is_autosave() {
+		return defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE;
 	}
 
 	/**
@@ -427,7 +484,7 @@ class BLT_Activity_Log_Module_Posts extends BLT_Activity_Log_Module_Base {
 	 * @return bool
 	 */
 	private function watches_meta( $post_id, $meta_key ) {
-		if ( $this->is_front_request() ) {
+		if ( $this->is_front_request() || $this->is_autosave() ) {
 			return false;
 		}
 
@@ -555,10 +612,25 @@ class BLT_Activity_Log_Module_Posts extends BLT_Activity_Log_Module_Base {
 	 * @return WP_Post|null
 	 */
 	private function loggable_post( $post_id ) {
+		global $wpdb;
+
 		$post = get_post( $post_id );
 
-		if ( ! $post instanceof WP_Post || 'auto-draft' === $post->post_status ) {
+		if ( ! $post instanceof WP_Post ) {
 			return null;
+		}
+
+		// While a post is being created, terms and meta are written after its row is updated but before the
+		// cache is cleared, so get_post() still answers "auto-draft". The row knows better.
+		if ( 'auto-draft' === $post->post_status ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Reads the live status of one row, past a stale cache.
+			$status = $wpdb->get_var( $wpdb->prepare( "SELECT post_status FROM {$wpdb->posts} WHERE ID = %d", (int) $post_id ) );
+
+			if ( null === $status || 'auto-draft' === $status ) {
+				return null;
+			}
+
+			$post->post_status = (string) $status;
 		}
 
 		return in_array( $post->post_type, self::types(), true ) ? $post : null;
@@ -677,7 +749,9 @@ class BLT_Activity_Log_Module_Posts extends BLT_Activity_Log_Module_Base {
 		);
 
 		$summary = array(
-			'chars' => array( BLT_Activity_Log_Redactor::length( $before ), BLT_Activity_Log_Redactor::length( $after ) ),
+			'chars'  => array( BLT_Activity_Log_Redactor::length( $before ), BLT_Activity_Log_Redactor::length( $after ) ),
+			// Fingerprints, not content: they let a save that undoes an earlier one be recognized exactly.
+			'hashes' => array( substr( md5( $before ), 0, 16 ), substr( md5( $after ), 0, 16 ) ),
 		);
 
 		if ( ! empty( $delta['added'] ) ) {

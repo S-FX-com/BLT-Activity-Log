@@ -27,6 +27,16 @@ class BLT_Activity_Log_Query {
 	const MAX_PER_PAGE     = 200;
 
 	/**
+	 * Highest page number honored, so `(page - 1) * per_page` cannot overflow into a float and wrap to 0.
+	 */
+	const MAX_PAGED = 1000000;
+
+	/**
+	 * The arguments that filter the log (as opposed to sorting or paging it).
+	 */
+	const FILTER_KEYS = array( 'activity', 'user', 'from', 'to', 's', 'item' );
+
+	/**
 	 * Sort keys the list may use, mapped to the column sorted on.
 	 */
 	const SORTABLE = array(
@@ -65,6 +75,7 @@ class BLT_Activity_Log_Query {
 			'from'     => '',
 			'to'       => '',
 			's'        => '',
+			'item'     => '',
 			'orderby'  => 'when',
 			'order'    => 'desc',
 			'paged'    => 1,
@@ -74,7 +85,8 @@ class BLT_Activity_Log_Query {
 		if ( isset( $raw['activity'] ) && is_string( $raw['activity'] ) ) {
 			$activity = strtolower( trim( $raw['activity'] ) );
 
-			if ( 1 === preg_match( '/^[a-z0-9_]+(:[a-z0-9_]+)?$/', $activity ) ) {
+			// The characters `sanitize_key()` lets a category or action keep, which the Logger applies on the way in.
+			if ( 1 === preg_match( '/^[a-z0-9_\-]+(:[a-z0-9_\-]+)?$/', $activity ) ) {
 				$args['activity'] = $activity;
 			}
 		}
@@ -85,7 +97,7 @@ class BLT_Activity_Log_Query {
 			if ( 'none' === $user || ( ctype_digit( $user ) && '' !== $user ) ) {
 				$args['user'] = $user;
 			} elseif ( '' !== $user ) {
-				$args['user'] = 'login:' . substr( $user, 0, 60 );
+				$args['user'] = 'login:' . mb_substr( $user, 0, 60 );
 			}
 		}
 
@@ -96,7 +108,17 @@ class BLT_Activity_Log_Query {
 		}
 
 		if ( isset( $raw['s'] ) && is_string( $raw['s'] ) ) {
-			$args['s'] = substr( trim( $raw['s'] ), 0, 200 );
+			// By characters, not bytes: a cut through a multibyte character is invalid UTF-8 and matches nothing.
+			$args['s'] = mb_substr( trim( $raw['s'] ), 0, 200 );
+		}
+
+		// One object: `type|id:123` or `type|key:akismet/akismet.php`.
+		if ( isset( $raw['item'] ) && is_string( $raw['item'] ) && 1 === preg_match( '/^([a-z0-9_\-]{1,64})\|(id|key):(.+)$/s', $raw['item'], $m ) ) {
+			if ( 'id' === $m[2] && ctype_digit( $m[3] ) ) {
+				$args['item'] = $m[1] . '|id:' . (string) (int) $m[3];
+			} elseif ( 'key' === $m[2] ) {
+				$args['item'] = $m[1] . '|key:' . mb_substr( $m[3], 0, 191 );
+			}
 		}
 
 		if ( isset( $raw['orderby'] ) && is_string( $raw['orderby'] ) && isset( self::SORTABLE[ $raw['orderby'] ] ) ) {
@@ -108,7 +130,7 @@ class BLT_Activity_Log_Query {
 		}
 
 		if ( isset( $raw['paged'] ) ) {
-			$args['paged'] = max( 1, (int) $raw['paged'] );
+			$args['paged'] = max( 1, min( self::MAX_PAGED, (int) $raw['paged'] ) );
 		}
 
 		if ( isset( $raw['per_page'] ) ) {
@@ -161,7 +183,10 @@ class BLT_Activity_Log_Query {
 		}
 
 		if ( '' !== $to && self::valid_date( $to ) ) {
-			$end                    = ( new DateTimeImmutable( $to . ' 00:00:00', $tz ) )->modify( '+1 day' );
+			// The next date is worked out as a calendar date first. Adding a day to a local midnight that does
+			// not exist (clocks that jump at 00:00, as in Cairo or Santiago) lands on 01:00 and keeps it.
+			$next                   = ( new DateTimeImmutable( $to . ' 00:00:00', $utc ) )->modify( '+1 day' )->format( 'Y-m-d' );
+			$end                    = new DateTimeImmutable( $next . ' 00:00:00', $tz );
 			$result['to_exclusive'] = $end->setTimezone( $utc )->format( 'Y-m-d H:i:s' );
 		}
 
@@ -230,6 +255,21 @@ class BLT_Activity_Log_Query {
 		if ( null !== $range['to_exclusive'] ) {
 			$clauses[] = 'created_at < %s';
 			$params[]  = $range['to_exclusive'];
+		}
+
+		$item = isset( $args['item'] ) ? (string) $args['item'] : '';
+
+		if ( '' !== $item && 1 === preg_match( '/^([^|]+)\|(id|key):(.+)$/s', $item, $m ) ) {
+			$clauses[] = 'object_type = %s';
+			$params[]  = $m[1];
+
+			if ( 'id' === $m[2] ) {
+				$clauses[] = 'object_id = %d';
+				$params[]  = (int) $m[3];
+			} else {
+				$clauses[] = 'object_key = %s';
+				$params[]  = $m[3];
+			}
 		}
 
 		$search = isset( $args['s'] ) ? (string) $args['s'] : '';

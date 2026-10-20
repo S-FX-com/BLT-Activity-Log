@@ -48,6 +48,20 @@ class Blt_Fake_Wpdb {
 	public $row = null;
 
 	/**
+	 * Results `update()` and `delete()` hand back, one per call, before they fall back to 1 (a lost race is 0).
+	 *
+	 * @var int[]
+	 */
+	public $write_results = array();
+
+	/**
+	 * Make multi-row statements (`query()`) fail while single-row `insert()` calls still work.
+	 *
+	 * @var bool
+	 */
+	public $fail_multi = false;
+
+	/**
 	 * Make writes fail with false.
 	 *
 	 * @var bool
@@ -133,7 +147,7 @@ class Blt_Fake_Wpdb {
 
 		$this->log[] = $sql;
 
-		if ( $this->fail ) {
+		if ( $this->fail || $this->fail_multi ) {
 			$this->last_error = 'Table does not exist';
 
 			return false;
@@ -198,7 +212,7 @@ class Blt_Fake_Wpdb {
 			'where' => $where,
 		);
 
-		return 1;
+		return empty( $this->write_results ) ? 1 : array_shift( $this->write_results );
 	}
 
 	/**
@@ -212,7 +226,7 @@ class Blt_Fake_Wpdb {
 	public function delete( $table, $where, $formats = array() ) { // phpcs:ignore
 		$this->log[] = 'DELETE ' . $table . ' ' . wp_json_encode( $where );
 
-		return 1;
+		return empty( $this->write_results ) ? 1 : array_shift( $this->write_results );
 	}
 }
 
@@ -937,6 +951,7 @@ class Test_Logger extends TestCase {
 			'id'          => 41,
 			'action'      => 'created',
 			'occurrences' => 1,
+			'last_at'     => '2026-10-20 03:00:00',
 			'details'     => '{"changes":[{"field":"post_status","before":"","after":"draft"}]}',
 		);
 
@@ -945,7 +960,9 @@ class Test_Logger extends TestCase {
 
 		$this->assertSame( array(), $this->db->inserted, 'No new row.' );
 		$this->assertCount( 1, $this->db->updated );
-		$this->assertSame( array( 'id' => 41 ), $this->db->updated[0]['where'] );
+		$this->assertSame( 41, $this->db->updated[0]['where']['id'] );
+		$this->assertSame( 1, $this->db->updated[0]['where']['occurrences'], 'The write names the version it read.' );
+		$this->assertSame( '2026-10-20 03:00:00', $this->db->updated[0]['where']['last_at'] );
 		$this->assertSame( 2, $this->db->updated[0]['data']['occurrences'] );
 
 		$merged = json_decode( $this->db->updated[0]['data']['details'], true ); // phpcs:ignore WordPress.WP.AlternativeFunctions.json_encode_json_decode
@@ -966,6 +983,7 @@ class Test_Logger extends TestCase {
 			'id'          => 41,
 			'action'      => 'published',
 			'occurrences' => 1,
+			'last_at'     => '2026-10-20 03:00:00',
 			'details'     => '{}',
 		);
 
@@ -974,6 +992,75 @@ class Test_Logger extends TestCase {
 
 		$this->assertSame( array(), $this->db->updated );
 		$this->assertCount( 1, $this->db->inserted );
+	}
+
+	/**
+	 * Losing a race to another request is not losing the save: read again and merge on top.
+	 *
+	 * @return void
+	 */
+	public function test_a_lost_merge_race_is_retried() {
+		$this->db->row           = (object) array(
+			'id'          => 41,
+			'action'      => 'updated',
+			'occurrences' => 1,
+			'last_at'     => '2026-10-20 03:00:00',
+			'details'     => '{"changes":[{"field":"post_status","before":"","after":"draft"}]}',
+		);
+		$this->db->write_results = array( 0 );
+
+		BLT_Activity_Log_Logger::record( $this->entry() );
+		BLT_Activity_Log_Logger::flush();
+
+		$this->assertCount( 2, $this->db->updated, 'The second try wrote.' );
+		$this->assertSame( array(), $this->db->inserted, 'And nothing was lost or duplicated.' );
+		$this->assertCount( 2, array_filter( $this->db->log, function ( $line ) { return 0 === strpos( $line, 'SELECT' ); } ), 'The row was read again.' );
+	}
+
+	/**
+	 * Still losing after three reads: the save becomes its own row.
+	 *
+	 * @return void
+	 */
+	public function test_a_merge_that_keeps_losing_is_inserted_instead() {
+		$this->db->row           = (object) array(
+			'id'          => 41,
+			'action'      => 'updated',
+			'occurrences' => 1,
+			'last_at'     => '2026-10-20 03:00:00',
+			'details'     => '{"changes":[{"field":"post_status","before":"","after":"draft"}]}',
+		);
+		$this->db->write_results = array( 0, 0, 0 );
+
+		BLT_Activity_Log_Logger::record( $this->entry() );
+		BLT_Activity_Log_Logger::flush();
+
+		$this->assertCount( 3, $this->db->updated );
+		$this->assertCount( 1, $this->db->inserted, 'Recorded as a separate row.' );
+	}
+
+	/**
+	 * A save that would revert a stored row loses a race too: the delete names the version it read.
+	 *
+	 * @return void
+	 */
+	public function test_a_revert_delete_is_guarded_the_same_way() {
+		$this->db->row = (object) array(
+			'id'          => 41,
+			'action'      => 'updated',
+			'occurrences' => 3,
+			'last_at'     => '2026-10-20 03:00:00',
+			'details'     => '{"changes":[{"field":"post_title","before":"About Us","after":"About"}]}',
+		);
+
+		BLT_Activity_Log_Logger::record( $this->entry() );
+		BLT_Activity_Log_Logger::flush();
+
+		$deletes = array_values( array_filter( $this->db->log, function ( $line ) { return 0 === strpos( $line, 'DELETE' ); } ) );
+
+		$this->assertCount( 1, $deletes );
+		$this->assertStringContainsString( '"occurrences":3', $deletes[0] );
+		$this->assertStringContainsString( '"last_at":"2026-10-20 03:00:00"', $deletes[0] );
 	}
 
 	/**
@@ -986,6 +1073,7 @@ class Test_Logger extends TestCase {
 			'id'          => 41,
 			'action'      => 'updated',
 			'occurrences' => 1,
+			'last_at'     => '2026-10-20 03:00:00',
 			'details'     => '{"changes":[{"field":"post_title","before":"About Us","after":"About"}]}',
 		);
 
@@ -1028,6 +1116,7 @@ class Test_Logger extends TestCase {
 			'id'          => 41,
 			'action'      => 'updated',
 			'occurrences' => 1,
+			'last_at'     => '2026-10-20 03:00:00',
 			'details'     => '{"changes":[{"field":"post_title","before":"x","after":"y"}]}',
 		);
 
@@ -1056,6 +1145,7 @@ class Test_Logger extends TestCase {
 			'id'          => 41,
 			'action'      => 'updated',
 			'occurrences' => 1,
+			'last_at'     => '2026-10-20 03:00:00',
 			'details'     => '{}',
 		);
 
@@ -1071,5 +1161,105 @@ class Test_Logger extends TestCase {
 
 		$this->assertCount( 0, $selects );
 		$this->assertCount( 1, $this->db->inserted );
+	}
+
+	/**
+	 * A filter that makes a value too long for its column is cut again, so it cannot fail the multi-row INSERT.
+	 *
+	 * @return void
+	 */
+	public function test_values_a_filter_lengthens_are_cut_to_their_columns() {
+		add_filter(
+			'blt_activity_log_entry',
+			function ( $entry ) {
+				$entry['object_label'] = str_repeat( 'é', 400 );
+				$entry['object_key']   = str_repeat( 'k', 400 );
+				$entry['category']     = str_repeat( 'c', 80 );
+
+				return $entry;
+			}
+		);
+
+		BLT_Activity_Log_Logger::record( $this->entry() );
+		BLT_Activity_Log_Logger::flush();
+
+		$row = $this->db->inserted[0];
+
+		$this->assertSame( 255, mb_strlen( $row['object_label'] ) );
+		$this->assertSame( 191, strlen( $row['object_key'] ) );
+		$this->assertSame( 32, strlen( $row['category'] ) );
+	}
+
+	/**
+	 * A malformed time falls back to now instead of failing the INSERT.
+	 *
+	 * @return void
+	 */
+	public function test_a_malformed_created_at_becomes_now() {
+		BLT_Activity_Log_Logger::record( $this->entry( array( 'created_at' => "2026-13-45' OR 1=1" ) ) );
+		BLT_Activity_Log_Logger::flush();
+
+		$this->assertMatchesRegularExpression( '/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $this->db->inserted[0]['created_at'] );
+		$this->assertStringStartsWith( gmdate( 'Y-m-d' ), $this->db->inserted[0]['created_at'] );
+	}
+
+	/**
+	 * An entry from another plugin with nothing the plugin recognizes is still an entry.
+	 *
+	 * @return void
+	 */
+	public function test_a_kept_entry_is_not_dropped_as_an_empty_update() {
+		BLT_Activity_Log_Logger::record( $this->entry( array( 'details' => array(), 'keep' => true ) ) );
+		BLT_Activity_Log_Logger::record( $this->entry( array( 'object_id' => 13, 'details' => array() ) ) );
+		BLT_Activity_Log_Logger::flush();
+
+		$this->assertCount( 1, $this->db->inserted, 'The built-in empty update is dropped; the kept one is written.' );
+		$this->assertSame( 12, (int) $this->db->inserted[0]['object_id'] );
+	}
+
+	/**
+	 * One entry that throws costs that entry only.
+	 *
+	 * @return void
+	 */
+	public function test_one_failing_entry_does_not_lose_the_rest() {
+		add_filter(
+			'blt_activity_log_should_log',
+			function ( $log, $entry ) {
+				if ( 'bomb' === $entry['object_label'] ) {
+					throw new RuntimeException( 'listener exploded' );
+				}
+
+				return $log;
+			},
+			10,
+			2
+		);
+
+		BLT_Activity_Log_Logger::record( $this->entry( array( 'object_id' => 1, 'object_label' => 'first' ) ) );
+		BLT_Activity_Log_Logger::record( $this->entry( array( 'object_id' => 2, 'object_label' => 'bomb' ) ) );
+		BLT_Activity_Log_Logger::record( $this->entry( array( 'object_id' => 3, 'object_label' => 'third' ) ) );
+		BLT_Activity_Log_Logger::flush();
+
+		$sql = implode( "\n", array_filter( $this->db->log, function ( $line ) { return 0 === strpos( $line, 'INSERT INTO' ); } ) );
+
+		$this->assertStringContainsString( 'first', $sql );
+		$this->assertStringContainsString( 'third', $sql );
+		$this->assertStringNotContainsString( 'bomb', $sql );
+	}
+
+	/**
+	 * A multi-row INSERT that the database refuses is retried row by row, so one bad row loses only itself.
+	 *
+	 * @return void
+	 */
+	public function test_a_refused_multi_row_insert_falls_back_to_single_rows() {
+		$this->db->fail_multi = true;
+
+		BLT_Activity_Log_Logger::record( $this->entry( array( 'object_id' => 1 ) ) );
+		BLT_Activity_Log_Logger::record( $this->entry( array( 'object_id' => 2 ) ) );
+		BLT_Activity_Log_Logger::flush();
+
+		$this->assertSame( array( 1, 2 ), array_map( 'intval', array_column( $this->db->inserted, 'object_id' ) ) );
 	}
 }

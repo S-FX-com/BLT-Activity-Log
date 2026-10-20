@@ -49,7 +49,7 @@ Entries that change nothing are not logged: a save that altered no tracked field
 | Setting | Default | Notes |
 | --- | --- | --- |
 | What to log | Everything except failed sign-ins | One toggle per category. Changes to this plugin's own settings, clearing the log and exporting it are always recorded. |
-| Skip these post types | none | Added to the built-in exclusions. |
+| Skip these post types | none | Added to the built-in exclusions. WooCommerce orders and ACF field definitions are already excluded; the `blt_activity_log_post_types` filter adds them back. |
 | Settings changes | WordPress settings screens | Or **any option changed by a signed-in user**, which also catches other plugins' settings forms. Noisier. Changes from cron and from visitors are never logged. |
 | IP address | Store in full | Or anonymized, or off. Applies to new entries. |
 | Browser | Stored | The user agent, shortened to 255 characters. |
@@ -119,14 +119,25 @@ Repository conventions for contributors and AI sessions are in [CLAUDE.md](CLAUD
 
 - **Buffer, then write once.** Listeners buffer entries; the buffer is merged per request and written on `shutdown` in one multi-row insert. A failed write never reaches the visitor: it costs one `error_log()` line.
 - **A page view costs nothing.** Nothing queries the database at boot (settings are autoloaded) and no listener does work unless its hook fires. A front-end page view runs zero queries from this plugin.
-- **Redaction is by key.** Option names, meta keys and array keys matching the redaction pattern are recorded as changed with the value hidden. A short list (password hashes, session tokens, application password values, `post_password`) is always hidden.
+- **Redaction is by key.** Option names, meta keys and array keys matching the redaction pattern are recorded as changed with the value hidden. Keys are normalized first (`accessToken`, `smtp.password` and `Client Secret` match like `access_token`). A short list (password hashes, session tokens, application password values, `post_password`) is always hidden.
 - **A year at most, and no "forever".** The log is a working record, so retention runs from 1 to 365 days and a value of 0 or text is refused rather than read as "keep everything" or "delete everything". A site that needs a longer record downloads a full dump before entries age out; the dump is the stored data itself (including each entry's details), not the on-screen export.
 - **Content is summarized, not stored.** WordPress revisions already keep post content. An entry stores character counts and a block histogram, and links to the revision comparison when revisions exist.
 - **Tools submenu.** The log is a submenu of Tools, not a top-level menu. The BLT family layer accepts a relative menu URL (`tools.php?page=blt-activity-log`), so no change to the shared layer was needed.
 - **`WP_List_Table` inside a `.blt-card`.** The design system has no table component. The log uses core's list table, styled with the design tokens in `admin/assets/blt-activity-log-admin.css`, so keyboard behavior, sorting, pagination and Screen Options are core's.
 - **Public repository.** The updater reads public releases, so no GitHub token is declared and the family `groups` list is empty.
 - **WordPress's own bookkeeping is not a setting change.** Rewrite rules, cron, transients, theme-switch bookkeeping, caches, upgrade flags and role definitions are never logged, even in the "any option" scope. Filter `blt_activity_log_ignored_options` to change the list.
+- **One writer at a time per entry.** Two requests saving the same object within the merge window update one row. The update names the version it read, a request that loses re-reads and merges on top (three tries), and a save that keeps losing becomes its own row instead of being lost.
+- **Revert detection is exact.** A content summary carries a short hash of the content before and after, so a save that puts the content back drops the field (nothing to report), while a character count alone would have mistaken "Monday" to "Friday" to "Sunday" for a revert.
+- **The snapshot moves only what a logged change touched.** An update logs one plugin and refreshes only that plugin, so an unrelated change made earlier outside WordPress is still reported at the next daily check.
+- **Clearing the log is bound to its preview.** The preview records the newest entry it counted and the delete stops there, so what is removed is what was shown.
 - **Local copy of Cloudflare range matching.** `BLT_Activity_Log_Ip` duplicates the matching in BLT Secure rather than adding to the shared layer. A candidate for `includes/blt-family/` later.
+
+## Known limitations
+
+- **Menu items edited in the Customizer or through REST.** The menu entry is written when WordPress saves the menu itself (the Appearance > Menus screen). An edit that changes only menu items through the Customizer or the REST endpoints may not produce an entry.
+- **A failed sign-in records what was typed.** With the optional failed sign-in log on, the attempted username is stored (cut to 60 characters). People sometimes type a password into that box, so the setting says so. Leave it off unless you need it.
+- **Single site.** Multisite is not supported yet (see Roadmap).
+- **Not tamper-proof.** See Non-goals.
 
 ## Data
 

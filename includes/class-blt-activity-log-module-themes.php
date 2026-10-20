@@ -102,10 +102,19 @@ class BLT_Activity_Log_Module_Themes extends BLT_Activity_Log_Module_Base {
 		$known  = BLT_Activity_Log_Snapshot::stored()['themes'];
 		$method = $this->update_method( $upgrader );
 
+		$moved = array();
+
 		foreach ( $stylesheets as $stylesheet ) {
 			$data          = self::theme_data( $stylesheet );
 			$was_installed = array_key_exists( $stylesheet, $known );
 			$action        = ( 'install' === $hook_extra['action'] && ! $was_installed ) ? 'installed' : 'updated';
+
+			// A failed or skipped update still fires the hook (see the Plugins module): leave it out.
+			if ( 'updated' === $action && 'upload' !== $method && ( '' === $data['version'] || ( $was_installed && (string) $known[ $stylesheet ] === $data['version'] ) ) ) {
+				continue;
+			}
+
+			$moved[] = $stylesheet;
 
 			BLT_Activity_Log_Logger::record(
 				array(
@@ -125,7 +134,7 @@ class BLT_Activity_Log_Module_Themes extends BLT_Activity_Log_Module_Base {
 			);
 		}
 
-		BLT_Activity_Log_Snapshot::refresh();
+		BLT_Activity_Log_Snapshot::refresh_keys( array(), $moved );
 	}
 
 	/**
@@ -203,7 +212,9 @@ class BLT_Activity_Log_Module_Themes extends BLT_Activity_Log_Module_Base {
 			)
 		);
 
-		BLT_Activity_Log_Snapshot::refresh();
+		wp_clean_themes_cache( false );
+
+		BLT_Activity_Log_Snapshot::refresh_keys( array(), array( $stylesheet ) );
 	}
 
 	/**

@@ -159,7 +159,12 @@ class BLT_Activity_Log_Install {
 ) {$charset_collate};"
 		);
 
-		update_option( self::DB_VERSION_OPTION, self::DB_VERSION, true );
+		// If the table could not be created (no CREATE privilege, say), do not record it as done: the next
+		// request tries again, instead of every write failing for good.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Our own table name.
+		if ( 0 === strcasecmp( (string) $wpdb->get_var( "SHOW TABLES LIKE '" . esc_sql( $wpdb->esc_like( $table ) ) . "'" ), $table ) ) {
+			update_option( self::DB_VERSION_OPTION, self::DB_VERSION, true );
+		}
 	}
 
 	/**

@@ -146,6 +146,43 @@ class Test_Formatter extends TestCase {
 	}
 
 	/**
+	 * What happened to a value that is never stored (a password) is kept, so the
+	 * detail screen can say "set", "changed" or "removed".
+	 *
+	 * @return void
+	 */
+	public function test_a_change_keeps_its_note() {
+		$clean = BLT_Activity_Log_Formatter::normalize_details(
+			array(
+				'changes' => array(
+					array(
+						'field'    => 'post_password',
+						'redacted' => true,
+						'note'     => 'changed',
+					),
+					array(
+						'field' => 'x',
+						'note'  => array( 'nope' ),
+					),
+				),
+			)
+		);
+
+		$this->assertSame( 'changed', $clean['changes'][0]['note'] );
+		$this->assertArrayNotHasKey( 'note', $clean['changes'][1] );
+	}
+
+	/**
+	 * `post_date` is stored in site time, so showing it must not shift it.
+	 *
+	 * @return void
+	 */
+	public function test_a_post_date_is_not_converted_as_if_it_were_utc() {
+		$this->assertSame( BLT_Activity_Log_Formatter::local_time( '2026-10-20 09:00:00' ), BLT_Activity_Log_Formatter::value_label( 'post_date', '2026-10-20 09:00:00' ) );
+		$this->assertSame( 'not a date', BLT_Activity_Log_Formatter::local_time( 'not a date' ) );
+	}
+
+	/**
 	 * A well-formed structure passes through unchanged.
 	 *
 	 * @return void
