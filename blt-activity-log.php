@@ -3,7 +3,7 @@
  * Plugin Name:       BLT Activity Log
  * Plugin URI:        https://github.com/S-FX-com/BLT-Activity-Log
  * Description:       A record of what changed on your site: content, plugins, themes, settings, users and sign-ins, with who did it, when, and exactly which fields changed.
- * Version:           0.1.0
+ * Version:           1.0.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            S-FX.com
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'BLT_ACTIVITY_LOG_VERSION', '0.1.0' ); // Must equal the header. CI enforces this.
+define( 'BLT_ACTIVITY_LOG_VERSION', '1.0.0' ); // Must equal the header. CI enforces this.
 define( 'BLT_ACTIVITY_LOG_FILE', __FILE__ );
 define( 'BLT_ACTIVITY_LOG_DIR', plugin_dir_path( __FILE__ ) );
 define( 'BLT_ACTIVITY_LOG_URL', plugin_dir_url( __FILE__ ) );
